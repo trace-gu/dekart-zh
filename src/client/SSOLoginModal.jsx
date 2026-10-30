@@ -6,11 +6,13 @@ import Text from 'antd/es/typography/Text'
 import { LockOutlined } from '@ant-design/icons'
 import { track } from './lib/tracking'
 import styles from './SSOLoginModal.module.css'
+import { useI18n } from './i18n'
 
 export default function SSOLoginModal ({
   visible,
   onClose
 }) {
+  const { t } = useI18n()
   const wasVisible = useRef(false)
   const ssoTrialUrl = 'https://mailchi.mp/dekart/upgrade-to-sso'
   const ssoDocsUrl = 'https://dekart.xyz/docs/self-hosting/enable-sso-open-source-instance/'
@@ -51,15 +53,15 @@ export default function SSOLoginModal ({
         <div className={styles.iconWrap}>
           <LockOutlined className={styles.icon} />
         </div>
-        <Title level={4} className={styles.heading}>Login requires SSO</Title>
+        <Title level={4} className={styles.heading}>{t('Login requires SSO')}</Title>
         <Text className={styles.body}>
-          Dekart is running in anonymous mode. To enable login, teams, and shared maps, your instance admin needs to configure SSO.
+          {t('Dekart is running in anonymous mode. To enable login, teams, and shared maps, your instance admin needs to configure SSO.')}
         </Text>
         <Button type='primary' size='large' className={styles.primaryButton} onClick={openSSOTrialForm}>
-          Enable SSO on your instance
+          {t('Enable SSO on your instance')}
         </Button>
         <Text type='secondary' className={styles.secondary}>
-          Already have a license key? <a href={ssoDocsUrl} target='_blank' rel='noopener noreferrer' onClick={(e) => { e.preventDefault(); openSSODocs() }}>See setup docs {'\u2192'}</a>
+          {t('Already have a license key?')} <a href={ssoDocsUrl} target='_blank' rel='noopener noreferrer' onClick={(e) => { e.preventDefault(); openSSODocs() }}>{t('See setup docs')} {'\u2192'}</a>
         </Text>
       </div>
     </Modal>

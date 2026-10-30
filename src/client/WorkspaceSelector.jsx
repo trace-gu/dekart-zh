@@ -10,8 +10,10 @@ import classNames from 'classnames'
 import { PlanType } from 'dekart-proto/dekart_pb'
 import styles from './WorkspaceSelector.module.css'
 import { switchWorkspace } from './actions/workspace'
+import { useI18n } from './i18n'
 
 export default function WorkspaceSelector () {
+  const { t } = useI18n()
   const userStream = useSelector(state => state.user.stream)
   const isPlayground = useSelector(state => state.user.isPlayground)
   const isDefaultWorkspace = useSelector(state => state.user.isDefaultWorkspace)
@@ -64,7 +66,7 @@ export default function WorkspaceSelector () {
               ? (
                 <div className={styles.manageOption} onClick={() => handleChange('create')}>
                   <PlusOutlined />
-                  <span>Create Workspace</span>
+                  <span>{t('Create Workspace')}</span>
                 </div>
                 )
               : null}
@@ -75,7 +77,7 @@ export default function WorkspaceSelector () {
               onMouseLeave={() => setIsManageHovered(false)}
             >
               <SettingOutlined />
-              <span>Manage Workspace</span>
+              <span>{t('Manage Workspace')}</span>
             </div>
           </div>
         )}
@@ -107,6 +109,7 @@ export default function WorkspaceSelector () {
 
 // default styling and no management option
 export function WorkspaceSelectorLight ({ sourceURL } = { sourceURL: '/' }) {
+  const { t } = useI18n()
   const userStream = useSelector(state => state.user.stream)
   const isPlayground = useSelector(state => state.user.isPlayground)
   const env = useSelector(state => state.env)
@@ -150,7 +153,7 @@ export function WorkspaceSelectorLight ({ sourceURL } = { sourceURL: '/' }) {
 
     >
       <Button>
-        Switch workspace <DownOutlined />
+        {t('Switch workspace')} <DownOutlined />
       </Button>
     </Dropdown>
   )

@@ -18,6 +18,8 @@ import { GlobalOutlined, LockOutlined } from '@ant-design/icons'
 import { track } from './lib/tracking'
 import { UNKNOWN_EMAIL } from './lib/constants'
 import SSOLoginModal from './SSOLoginModal'
+import LanguageSwitch from './i18n/LanguageSwitch'
+import { useI18n } from './i18n'
 
 function getSignature (email) {
   if (!email) {
@@ -32,6 +34,7 @@ function getSignature (email) {
 }
 
 function User ({ buttonDivider }) {
+  const { t } = useI18n()
   const token = useSelector(state => state.token)
   const history = useHistory()
   const userStream = useSelector(state => state.user.stream)
@@ -46,7 +49,7 @@ function User ({ buttonDivider }) {
     return null
   }
   if (!authEnabled) {
-    const displayEmail = userStream.email === UNKNOWN_EMAIL ? 'Anonymous' : userStream.email
+    const displayEmail = userStream.email === UNKNOWN_EMAIL ? t('Anonymous') : userStream.email
     const isAnonymous = userStream.email === UNKNOWN_EMAIL
     const disabledItems = [{
       label: displayEmail,
@@ -54,17 +57,17 @@ function User ({ buttonDivider }) {
     }]
     if (isPlayground && !isSnowpark && !isDefaultWorkspace) {
       disabledItems.push({
-        label: 'Switch to workspace',
+        label: t('Switch to workspace'),
         disabled: true
       })
     }
     disabledItems.push(
       {
-        label: 'Switch account',
+        label: t('Switch account'),
         disabled: true
       },
       {
-        label: 'Sign out',
+        label: t('Sign out'),
         disabled: true
       }
     )
@@ -78,7 +81,7 @@ function User ({ buttonDivider }) {
       state.setAction(AuthState.Action.ACTION_REQUEST_CODE)
       dispatch(authRedirect(state))
     }
-    const loginButtonText = env.isCloud ? 'Login with Google' : 'Login'
+    const loginButtonText = env.isCloud ? t('Login with Google') : t('Login')
 
     return (
       <>
@@ -113,7 +116,7 @@ function User ({ buttonDivider }) {
 
   if (isPlayground && !isSnowpark && !isDefaultWorkspace) {
     items.push({
-      label: 'Switch to workspace',
+      label: t('Switch to workspace'),
       onClick: () => {
         track('SwitchToWorkspace')
         history.push('/workspace')
@@ -123,7 +126,7 @@ function User ({ buttonDivider }) {
 
   if (token) {
     items.push({
-      label: 'Switch account',
+      label: t('Switch account'),
       onClick: () => {
         track('SwitchAccount')
         dispatch(localStorageReset())
@@ -135,7 +138,7 @@ function User ({ buttonDivider }) {
       }
     })
     items.push({
-      label: 'Sign out',
+      label: t('Sign out'),
       onClick: () => {
         track('SignOut')
         dispatch(localStorageReset())
@@ -162,6 +165,7 @@ function User ({ buttonDivider }) {
 }
 
 export function Workspace () {
+  const { t } = useI18n()
   const workspaceName = useSelector(state => state.workspace?.name)
   const isPlayground = useSelector(state => state.user.isPlayground)
   const history = useHistory()
@@ -170,7 +174,7 @@ export function Workspace () {
   }
   return (
     <div className={styles.workspace}>
-      <Tooltip title={<>You are in private workspace.<br />Click to manage workspace access.</>}>
+      <Tooltip title={<>{t('You are in private workspace.')}<br />{t('Click to manage workspace access.')}</>}>
         <Button
           type='link'
           size='small'
@@ -188,6 +192,7 @@ export function Workspace () {
 }
 
 export function PlaygroundMode () {
+  const { t } = useI18n()
   const isPlayground = useSelector(state => state.user.isPlayground)
   const isDefaultWorkspace = useSelector(state => state.user.isDefaultWorkspace)
   const dispatch = useDispatch()
@@ -201,19 +206,19 @@ export function PlaygroundMode () {
       <Tooltip title={
         (
           <div className={styles.playgroundTooltip}>
-            <div>Public playground mode is enabled. Your queries are public. Only public datasets are accessible.</div>
+            <div>{t('Public playground mode is enabled. Your queries are public. Only public datasets are accessible.')}</div>
             <Button
               size='small' type='link' onClick={() => {
                 track('SwitchToPrivateWorkspace')
                 dispatch(switchPlayground(false))
               }}
-            >Switch to private workspace
+            >{t('Switch to private workspace')}
             </Button>
           </div>
         )
       }
       >
-        <Button id='dekart-playground-mode-button' type='link' size='small' className={styles.playgroundButton}><GlobalOutlined /> Playground Mode</Button>
+        <Button id='dekart-playground-mode-button' type='link' size='small' className={styles.playgroundButton}><GlobalOutlined /> {t('Playground Mode')}</Button>
       </Tooltip>
     </div>
   )
@@ -237,6 +242,7 @@ export function Header ({ buttons, title, queryParams }) {
           {title ? (<div className={styles.titleWrap}><div className={styles.title}>{title}</div></div>) : (<div className={styles.dekartLinkHolder}><a target='_blank' rel='noopener noreferrer' className={styles.dekartLink} href={homePage}><span className={styles.dekartTitle} /></a></div>)}
         </div>
         <div className={styles.buttons}>{buttons || null}</div>
+        <LanguageSwitch />
         <User buttonDivider={Boolean(buttons)} />
       </div>
       {queryParams && <div className={styles.queryParams}>{queryParams}</div>}

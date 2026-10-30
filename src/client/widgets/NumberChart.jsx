@@ -6,6 +6,7 @@ import { useMosaicChartSettingsContext } from '@sqlrooms/mosaic/dist/charts/char
 import { Combobox, Input } from '@sqlrooms/ui'
 import { MosaicClient } from '@uwdata/mosaic-core'
 import { Query, column, count, sum, avg, min, max, median, sql } from '@uwdata/mosaic-sql'
+import { t, useI18n } from '../i18n'
 import styles from './NumberChart.module.css'
 
 const operations = { count: 'Count rows', distinct: 'Count distinct', sum: 'Sum', avg: 'Average', min: 'Minimum', max: 'Maximum', median: 'Median' }
@@ -18,39 +19,41 @@ const settingsSchema = z.object({
   decimals: z.number().int().min(0).max(6).default(2),
   prefix: z.string().default(''),
   suffix: z.string().default('')
-}).refine(settings => settings.operation === 'count' || Boolean(settings.field), { message: 'Choose a field' })
+}).refine(settings => settings.operation === 'count' || Boolean(settings.field), { message: () => t('Choose a field') })
 
 // Register a single extension in SQLRooms; creation and editing share its settings component.
 export const numberChartType = {
   id: 'number',
-  label: 'Number',
-  description: 'A single metric: count, sum, average and more.',
-  aiDescription: 'Display one aggregate over the filtered dataset.',
+  get label () { return t('Number') },
+  get description () { return t('A single metric: count, sum, average and more.') },
+  get aiDescription () { return t('Display one aggregate over the filtered dataset.') },
   icon: Hash,
   schema: settingsSchema,
   settingsComponent: NumberSettings,
   renderer: NumberChart,
-  buildTitle: settings => settings.operation && settings.operation !== 'count' ? `${operations[settings.operation]} of ${settings.field}` : 'Row count'
+  buildTitle: settings => settings.operation && settings.operation !== 'count' ? t('{operation} of {field}', { operation: t(operations[settings.operation]), field: settings.field }) : t('Row count')
 }
 
 function Option ({ label, value, options, onChange }) {
-  return <Field label={label}><Combobox value={value} onChange={onChange}><Combobox.Trigger ariaLabel={label}><span>{options[value]}</span></Combobox.Trigger><Combobox.Content>{Object.entries(options).map(([key, label]) => <Combobox.Item key={key} value={key}>{label}</Combobox.Item>)}</Combobox.Content></Combobox></Field>
+  const { t } = useI18n()
+  return <Field label={label}><Combobox value={value} onChange={onChange}><Combobox.Trigger ariaLabel={label}><span>{t(options[value])}</span></Combobox.Trigger><Combobox.Content>{Object.entries(options).map(([key, label]) => <Combobox.Item key={key} value={key}>{t(label)}</Combobox.Item>)}</Combobox.Content></Combobox></Field>
 }
 
 // Reuse SQLRooms fields and selectors so the extension follows the same inline editor conventions.
 function NumberSettings () {
   const { config, onChangeConfig } = useMosaicChartSettingsContext('number')
+  const { t } = useI18n()
   const settings = { operation: 'count', format: 'auto', decimals: 2, ...config.settings }
   const Selector = settings.operation === 'distinct' ? ColumnSelector : ColumnSelector.Numeric
   return (
     <div className={styles.settings}>
-      <Option label='Operation' value={settings.operation} options={operations} onChange={value => onChangeConfig('operation', value)} />
-      {settings.operation !== 'count' && <Field label='Field' required><Selector value={settings.field} onChange={value => onChangeConfig('field', value)} /></Field>}
-      <Field label='Subtitle'><Input aria-label='Subtitle' placeholder='Explain this metric (optional)' value={settings.subtitle || ''} onChange={event => onChangeConfig('subtitle', event.target.value)} /></Field>
-      <Option label='Number format' value={settings.format} options={formats} onChange={value => onChangeConfig('format', value)} />
-      {settings.format !== 'auto' && <Option label='Decimal places' value={String(settings.decimals)} options={{ 0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6' }} onChange={value => onChangeConfig('decimals', Number(value))} />}
-      {settings.format === 'percent' && <p className={styles.hint}>A value of 0.25 displays as 25%.</p>}
-      <div className={styles.units}><Field label='Prefix'><Input aria-label='Prefix' placeholder='e.g. €' value={settings.prefix || ''} onChange={event => onChangeConfig('prefix', event.target.value)} /></Field><Field label='Suffix'><Input aria-label='Suffix' placeholder='e.g. kWh' value={settings.suffix || ''} onChange={event => onChangeConfig('suffix', event.target.value)} /></Field></div>
+      <Option label={t('Operation')} value={settings.operation} options={operations} onChange={value => onChangeConfig('operation', value)} />
+      {settings.operation !== 'count' && <Field label={t('Field')} required><Selector value={settings.field} onChange={value => onChangeConfig('field', value)} /></Field>}
+      <Field label={t('Subtitle')}><Input aria-label={t('Subtitle')} placeholder={t('Explain this metric (optional)')} value={settings.subtitle || ''} onChange={event => onChangeConfig('subtitle', event.target.value)} /></Field>
+      <Option label={t('Number format')} value={settings.format} options={formats} onChange={value => onChangeConfig('format', value)} />
+      {settings.format !== 'auto' && <Option label={t('Decimal places')} value={String(settings.decimals)} options={{ 0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6' }} onChange={value => onChangeConfig('decimals', Number(value))} />}
+      {settings.format === 'percent' && <p className={styles.hint}>{t('A value of 0.25 displays as 25%.')}</p>}
+      <div className={styles.units}><Field label={t('Prefix')}><Input aria-label={t('Prefix')} placeholder={t('e.g. €')} value={settings.prefix || ''} onChange={event => onChangeConfig('prefix', event.target.value)} /></Field><Field label={t('Suffix')}><Input aria-label={t('Suffix')} placeholder={t('e.g. kWh')} value={settings.suffix || ''} onChange={event => onChangeConfig('suffix', event.target.value)} /></Field></div>
     </div>
   )
 }
@@ -77,6 +80,7 @@ class NumberClient extends MosaicClient {
 
 // Present empty aggregates explicitly; never turn a missing average into a misleading zero.
 function NumberChart ({ config, coordinator, dataTable, table, params, runtimeIssueContext, runtimeIssueReporter }) {
+  const { t, locale } = useI18n()
   const [result, setResult] = useState({ loading: true })
   const parsed = settingsSchema.safeParse(config.settings)
   const settings = parsed.success ? parsed.data : null
@@ -96,8 +100,8 @@ function NumberChart ({ config, coordinator, dataTable, table, params, runtimeIs
   }, [coordinator, table, selection, operation, field, missingField])
   useEffect(() => {
     // Settings, column, and query failures share the sticky panel failure channel.
-    if (!settings || missingField || result.error) runtimeIssueReporter.reportIssue({ message: 'Chart failed' })
-  }, [missingField, result.error, runtimeIssueReporter, settings])
+    if (!settings || missingField || result.error) runtimeIssueReporter.reportIssue({ message: t('Chart failed') })
+  }, [missingField, result.error, runtimeIssueReporter, settings, t])
   useEffect(() => {
     // Successful number results still participate in snapshot readiness.
     if (settings && !missingField && !result.loading && !result.error) markPanelPainted(panelId)
@@ -105,6 +109,6 @@ function NumberChart ({ config, coordinator, dataTable, table, params, runtimeIs
   // The Dekart panel wrapper owns the shared failure presentation.
   if (!settings || missingField || result.error) return null
   const options = settings.format === 'auto' ? { maximumFractionDigits: 2 } : { minimumFractionDigits: settings.decimals, maximumFractionDigits: settings.decimals, ...(settings.format === 'compact' ? { notation: 'compact' } : {}), ...(settings.format === 'percent' ? { style: 'percent' } : {}) }
-  const value = result.loading && result.value === undefined ? '…' : result.value == null ? 'No data' : new Intl.NumberFormat(undefined, options).format(result.value)
+  const value = result.loading && result.value === undefined ? '…' : result.value == null ? t('No data') : new Intl.NumberFormat(locale, options).format(result.value)
   return <div className={styles.card} data-testid='number-chart' aria-busy={Boolean(result.loading)}><div className={styles.value} aria-live='polite' title={result.value == null ? undefined : String(result.value)}>{result.value != null && settings.prefix}<span data-testid='number-value'>{value}</span>{result.value != null && settings.suffix && <span className={styles.unit}>{settings.suffix}</span>}</div>{settings.subtitle && <p className={styles.subtitle}>{settings.subtitle}</p>}</div>
 }

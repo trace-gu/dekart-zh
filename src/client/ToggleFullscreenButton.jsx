@@ -4,16 +4,18 @@ import { VerticalAlignBottomOutlined } from '@ant-design/icons'
 import MapControlButton from './MapControlButton'
 import { toggleReportFullscreen } from './actions/report'
 import { track } from './lib/tracking'
+import { useI18n } from './i18n'
 import styles from './ToggleFullscreenButton.module.css'
 
 export default function ToggleFullscreenButton () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const report = useSelector(state => state.report)
   const hideFullscreen = !report.allowExport && !report.canWrite && !report.readme
 
   return (
     <div className={styles.toggleFullscreen}>
-      <Tooltip title='Toggle fullscreen' placement='left'>
+      <Tooltip title={t('Toggle fullscreen')} placement='left'>
         <MapControlButton
           active
           disabled={hideFullscreen}

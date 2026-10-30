@@ -2,7 +2,7 @@
 
 FROM node:18 AS nodedeps
 WORKDIR /source
-COPY package.json package-lock.json .npmrc ./
+COPY package.json package-lock.json ./
 ENV CI=true
 RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
 COPY proto proto

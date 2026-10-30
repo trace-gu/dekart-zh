@@ -28,6 +28,11 @@ export default defineConfig(async () => {
         {
           find: /^apache-arrow$/,
           replacement: path.resolve('node_modules/apache-arrow/Arrow.dom.mjs')
+        },
+        {
+          // Merge local Chinese overrides into Kepler's localization bundle at build time.
+          find: /^@kepler\.gl\/localization$/,
+          replacement: path.resolve('src/client/i18n/keplerLocalization.js')
         }
       ],
       dedupe: ['apache-arrow']

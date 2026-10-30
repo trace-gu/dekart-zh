@@ -2,6 +2,7 @@ import React from 'react'
 import classNames from 'classnames'
 import { PlanType } from 'dekart-proto/dekart_pb'
 import styles from './PricingBlock.module.css'
+import { useI18n } from './i18n'
 
 const plans = {
   [PlanType.TYPE_GROW]: {
@@ -20,11 +21,12 @@ const plans = {
 
 // Price renders one canonical plan price and its billing explanation.
 function Price ({ plan, variant }) {
+  const { t } = useI18n()
   return (
     <div className={classNames(styles.plan, { [styles.trialPlan]: variant === 'trial' })}>
       <strong>{plan.name}</strong>
-      <div className={styles.price}>{plan.price}<span className={styles.interval}>{plan.interval}</span></div>
-      <div className={styles.description}>{plan.description}</div>
+      <div className={styles.price}>{plan.price}<span className={styles.interval}>{t(plan.interval)}</span></div>
+      <div className={styles.description}>{t(plan.description)}</div>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { Search } from 'lucide-react'
 import { z } from 'zod'
 import { ItemSelector } from '@kepler.gl/components'
 import { messages } from '@kepler.gl/localization'
+import { keplerLocaleFor, t, useI18n } from '../i18n'
 import { theme } from '@kepler.gl/styles'
 import { getOrdinalDomain } from '@kepler.gl/utils'
 import { clausePoints } from '@uwdata/mosaic-core'
@@ -23,21 +24,22 @@ const searchableFieldTypes = new Set(['string', 'h3', 'date'])
 
 export const searchChartType = {
   id: 'search',
-  label: 'Search',
-  description: 'Find and filter values in a text column.',
-  aiDescription: 'Search a categorical column and filter the map by selected values.',
+  get label () { return t('Search') },
+  get description () { return t('Find and filter values in a text column.') },
+  get aiDescription () { return t('Search a categorical column and filter the map by selected values.') },
   icon: Search,
   schema: settingsSchema,
   settingsComponent: SearchSettings,
   renderer: SearchWidget,
-  buildTitle: settings => settings.field?.replaceAll('_', ' ') || 'Search'
+  buildTitle: settings => settings.field?.replaceAll('_', ' ') || t('Search')
 }
 
 // Match Category's text-only field picker.
 export function SearchSettings () {
   const { config, onChangeConfig } = useMosaicChartSettingsContext('search')
+  const { t } = useI18n()
   return (
-    <Field label='Field' required>
+    <Field label={t('Field')} required>
       <ColumnSelector.Categorical
         value={config.settings.field}
         onChange={value => onChangeConfig('field', value)}
@@ -65,6 +67,8 @@ export class SearchInteractor {
 
 // Search publishes the same categorical selection clause as a Category click.
 export default function SearchWidget ({ config, dataTable, params, runtimeIssueContext, runtimeIssueReporter }) {
+  const { locale, t } = useI18n()
+  const keplerLocale = keplerLocaleFor(locale)
   const [dashboardId, panelId] = useMemo(() => {
     const match = /^dashboard:(.*):panel:(.*)$/.exec(runtimeIssueContext.panelId)
     return [match?.[1], match?.[2]]
@@ -90,8 +94,8 @@ export default function SearchWidget ({ config, dataTable, params, runtimeIssueC
 
   useEffect(() => {
     // Invalid fields must fail before a panel client can publish a map filter.
-    if (missingField || invalidField) runtimeIssueReporter.reportIssue({ message: 'Chart failed' })
-  }, [missingField, invalidField, runtimeIssueReporter])
+    if (missingField || invalidField) runtimeIssueReporter.reportIssue({ message: t('Chart failed') })
+  }, [missingField, invalidField, runtimeIssueReporter, t])
   useEffect(() => {
     if (!options || missingField || invalidField) return
     registerPanelClient(dashboardId, panelId, client)
@@ -106,7 +110,7 @@ export default function SearchWidget ({ config, dataTable, params, runtimeIssueC
 
   return (
     <div data-testid='search-widget'>
-      <IntlProvider locale='en' messages={messages.en}>
+      <IntlProvider locale={keplerLocale} messages={messages[keplerLocale]}>
         <ThemeProvider theme={theme}>
           <ItemSelector
             options={options}

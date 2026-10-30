@@ -1,6 +1,16 @@
 import { defineConfig } from 'vitest/config'
+import path from 'node:path'
 
 export default defineConfig({
+  resolve: {
+    alias: [
+      {
+        // Keep unit tests on the same Kepler Chinese overrides as the app build.
+        find: /^@kepler\.gl\/localization$/,
+        replacement: path.resolve('src/client/i18n/keplerLocalization.js')
+      }
+    ]
+  },
   test: {
     globals: true,
     environment: 'jsdom',

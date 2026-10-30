@@ -6,15 +6,17 @@ import Empty from 'antd/es/empty'
 import Typography from 'antd/es/typography'
 import styles from './DeviceTokensTab.module.css'
 import { revokeDeviceToken } from './actions/workspace'
+import { useI18n } from './i18n'
 
 const { Text } = Typography
 const gisSkillRepoURL = 'https://github.com/dekart-xyz/geosql'
 
 function AgentLink () {
+  const { t } = useI18n()
   return (
     <div className={styles.agentLink}>
       <a href={gisSkillRepoURL} target='_blank' rel='noreferrer'>
-        Install Claude skill to run agentic GIS queries.
+        {t('Install Claude skill to run agentic GIS queries.')}
       </a>
     </div>
   )
@@ -22,6 +24,7 @@ function AgentLink () {
 
 // DeviceTokensTab renders workspace device tokens and revoke interactions.
 export default function DeviceTokensTab () {
+  const { t, formatDate } = useI18n()
   const dispatch = useDispatch()
   const devices = useSelector(state => state.deviceTokens.list)
   const loading = useSelector(state => state.deviceTokens.loading)
@@ -33,7 +36,7 @@ export default function DeviceTokensTab () {
     return (
       <div className={styles.container}>
         <Card className={styles.wrapper}>
-          <Empty description='No active device tokens' />
+          <Empty description={t('No active device tokens')} />
         </Card>
         <AgentLink />
       </div>
@@ -51,12 +54,12 @@ export default function DeviceTokensTab () {
               </div>
               <div className={styles.detailsColumn}>
                 <div className={styles.metaItem}>
-                  <Text type='secondary'>Token</Text>
+                  <Text type='secondary'>{t('Token')}</Text>
                   <Text code>{device.tokenPreview}</Text>
                 </div>
                 <div className={styles.metaItem}>
-                  <Text type='secondary'>Since</Text>
-                  <Text>{formatUnixDate(device.createdAt)}</Text>
+                  <Text type='secondary'>{t('Since')}</Text>
+                  <Text>{formatDate(device.createdAt * 1000)}</Text>
                 </div>
               </div>
               <div className={styles.actions}>
@@ -71,7 +74,7 @@ export default function DeviceTokensTab () {
                         setConfirmingId('')
                       }}
                     >
-                      Confirm
+                      {t('Confirm')}
                     </Button>
                     )
                   : (
@@ -80,7 +83,7 @@ export default function DeviceTokensTab () {
                       className={styles.removeButton}
                       onClick={() => setConfirmingId(device.id)}
                     >
-                      Remove
+                      {t('Remove')}
                     </Button>
                     )}
               </div>
@@ -91,12 +94,4 @@ export default function DeviceTokensTab () {
       <AgentLink />
     </div>
   )
-}
-
-// formatUnixDate converts unix timestamp seconds to YYYY-MM-DD for compact table display.
-function formatUnixDate (seconds) {
-  if (!seconds) {
-    return '—'
-  }
-  return new Date(seconds * 1000).toISOString().slice(0, 10)
 }

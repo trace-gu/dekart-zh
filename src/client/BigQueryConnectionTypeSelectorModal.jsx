@@ -7,11 +7,13 @@ import { ConnectionType } from 'dekart-proto/dekart_pb'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect } from 'react'
 import { track } from './lib/tracking'
+import { useI18n } from './i18n'
 
 export default function BigQueryConnectionTypeSelectorModal ({ open, onClose }) {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const googleOAuthEnabled = useSelector(state => state.env.googleOAuthEnabled)
-  const googleOAuthDisabledTitle = googleOAuthEnabled ? '' : 'Google OAuth is not configured for this Dekart instance'
+  const googleOAuthDisabledTitle = googleOAuthEnabled ? '' : t('Google OAuth is not configured for this Dekart instance')
   useEffect(() => {
     if (open) {
       track('OpenBigQueryConnectionTypeSelectorModal')
@@ -20,7 +22,7 @@ export default function BigQueryConnectionTypeSelectorModal ({ open, onClose }) 
 
   return (
     <Modal
-      title='Choose BigQuery Connection Method'
+      title={t('Choose BigQuery Connection Method')}
       open={open}
       onCancel={onClose}
       footer={null}
@@ -29,13 +31,13 @@ export default function BigQueryConnectionTypeSelectorModal ({ open, onClose }) 
       <div className={styles.connectionOptions}>
         <div className={styles.connectionOptionsItem}>
           <h2>
-            Use your Google Account
+            {t('Use your Google Account')}
           </h2>
           <p>
-            Recommended if your account already has BigQuery access.
+            {t('Recommended if your account already has BigQuery access.')}
           </p>
           <p>
-            No credentials stored in Dekart backend.
+            {t('No credentials stored in Dekart backend.')}
           </p>
 
           <p>
@@ -49,24 +51,24 @@ export default function BigQueryConnectionTypeSelectorModal ({ open, onClose }) 
                     dispatch(newConnection(ConnectionType.CONNECTION_TYPE_BIGQUERY))
                     track('ConnectWithGoogle')
                   }}
-                >Connect with Google
+                >{t('Connect with Google')}
                 </Button>
               </span>
             </Tooltip>
           </p>
           <p>
-            → <a href='https://dekart.xyz/docs/usage/choose-bigquery-connection-method/#which-permissions-are-required' target='_blank' rel='noreferrer'>Which permissions required?</a>
+            → <a href='https://dekart.xyz/docs/usage/choose-bigquery-connection-method/#which-permissions-are-required' target='_blank' rel='noreferrer'>{t('Which permissions required?')}</a>
           </p>
 
         </div>
         <div className={styles.connectionOptionsItem}>
           <h2>
-            Use Service Account
+            {t('Use Service Account')}
           </h2>
           <p>
-            Connect to BigQuery with using Service Account Key in JSON format.
+            {t('Connect to BigQuery with using Service Account Key in JSON format.')}
           </p>
-          <p>Key will be encrypted and stored in Dekart backend.</p>
+          <p>{t('Key will be encrypted and stored in Dekart backend.')}</p>
 
           <p>
             <Button
@@ -76,12 +78,12 @@ export default function BigQueryConnectionTypeSelectorModal ({ open, onClose }) 
                 dispatch(newConnection(ConnectionType.CONNECTION_TYPE_BIGQUERY, true))
                 track('ConnectWithServiceAccount')
               }}
-            >Configure Service Account
+            >{t('Configure Service Account')}
             </Button>
           </p>
           <div>
-            <div>→ <a href='https://dekart.xyz/docs/usage/choose-bigquery-connection-method/#how-to-get-a-service-account-key' target='_blank' rel='noreferrer'>How to get the key?</a></div>
-            <div>→ <a href='https://dekart.xyz/docs/usage/choose-bigquery-connection-method/#how-is-the-key-secured' target='_blank' rel='noreferrer'>How key is secured?</a></div>
+            <div>→ <a href='https://dekart.xyz/docs/usage/choose-bigquery-connection-method/#how-to-get-a-service-account-key' target='_blank' rel='noreferrer'>{t('How to get the key?')}</a></div>
+            <div>→ <a href='https://dekart.xyz/docs/usage/choose-bigquery-connection-method/#how-is-the-key-secured' target='_blank' rel='noreferrer'>{t('How key is secured?')}</a></div>
           </div>
 
         </div>

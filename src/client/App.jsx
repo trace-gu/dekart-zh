@@ -32,6 +32,7 @@ import DeviceAuthorizePage from './DeviceAuthorizePage'
 import TrialPage from './TrialPage'
 import { setSnapshotToken } from './actions/token'
 import { getWorkspace } from './actions/workspace'
+import { useI18n } from './i18n'
 
 // RedirectState reads states passed in the URL from the server
 function RedirectState () {
@@ -186,6 +187,7 @@ function SnapshotRouteState () {
 }
 
 function NotFoundPage () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const userStream = useSelector(state => state.user.stream)
   const workspaceId = userStream?.workspaceId
@@ -195,17 +197,17 @@ function NotFoundPage () {
   return (
     <>
       <Helmet>
-        <title>404 - Page Not Found — Dekart</title>
+        <title>{t('404 - Page Not Found')} — Dekart</title>
       </Helmet>
       <Result
         icon={<QuestionOutlined />} title='404' subTitle={(
           <>
-            <p>Page not found</p>
+            <p>{t('Page not found')}</p>
             {(userStream && !workspaceId) // stream is loaded and user is not in workspace
               ? (
                 <div>
-                  <p>To access private maps join workspace.</p>
-                  <Button onClick={() => dispatch(switchPlayground(false, '/workspace'))}>Join workspace</Button>
+                  <p>{t('To access private maps join workspace.')}</p>
+                  <Button onClick={() => dispatch(switchPlayground(false, '/workspace'))}>{t('Join workspace')}</Button>
                 </div>
                 )
               : (
@@ -219,7 +221,7 @@ function NotFoundPage () {
                           )
                         : (
                           <div>
-                            <Button onClick={() => history.push('/')}>Back to workspace</Button>
+                            <Button onClick={() => history.push('/')}>{t('Back to workspace')}</Button>
                           </div>
                           )
                     )
@@ -234,6 +236,7 @@ function NotFoundPage () {
 }
 
 function ErrorPage ({ icon, title, subTitle }) {
+  const { t } = useI18n()
   const history = useHistory()
   return (
     <>
@@ -243,9 +246,9 @@ function ErrorPage ({ icon, title, subTitle }) {
       <Result
         icon={icon} title={title} subTitle={(
           <>
-            <p>{subTitle}</p>
+            <p>{t(subTitle)}</p>
             <div>
-              <Button onClick={() => history.push('/')}>Back to workspace</Button>
+              <Button onClick={() => history.push('/')}>{t('Back to workspace')}</Button>
             </div>
           </>
           )}

@@ -20,19 +20,21 @@ import classNames from 'classnames'
 import { goToPresent, goToSource } from './lib/navigation'
 import { toggleSnapshotModal } from './actions/snapshots'
 import { useQueriesRunning } from './lib/useQueriesRunning'
+import { useI18n } from './i18n'
 
-function formatIntervalLabel (seconds) {
-  if (seconds === 0) return 'None'
-  if (seconds === 60) return '1 min'
-  if (seconds === 300) return '5 min'
-  if (seconds === 600) return '10 min'
-  if (seconds === 900) return '15 min'
-  if (seconds === 1800) return '30 min'
-  if (seconds === 3600) return '1 hour'
-  return `${seconds}s`
+function formatIntervalLabel (seconds, t) {
+  if (seconds === 0) return t('None')
+  if (seconds === 60) return t('1 min')
+  if (seconds === 300) return t('5 min')
+  if (seconds === 600) return t('10 min')
+  if (seconds === 900) return t('15 min')
+  if (seconds === 1800) return t('30 min')
+  if (seconds === 3600) return t('1 hour')
+  return t('{seconds}s', { seconds })
 }
 
 function ForkButton ({ primary }) {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const { id: reportId } = useSelector(state => state.report)
   const userStream = useSelector(state => state.user.stream)
@@ -43,7 +45,7 @@ function ForkButton ({ primary }) {
   const readOnly = useSelector(state => state.workspace.readOnly)
 
   const disabled = isViewer || readOnly || (!allowExport && !canWrite)
-  const disabledTitle = readOnly ? 'Workspace is read-only' : 'Forking maps is disabled for viewers'
+  const disabledTitle = readOnly ? t('Workspace is read-only') : t('Forking maps is disabled for viewers')
 
   const history = useHistory()
 
@@ -69,9 +71,9 @@ function ForkButton ({ primary }) {
         icon={<ForkOutlined />}
         id='dekart-fork-button'
         disabled={disabled}
-        title={disabled ? disabledTitle : 'Duplicate Map'}
+        title={disabled ? disabledTitle : t('Duplicate Map')}
         onClick={onClick}
-      >Duplicate Map
+      >{t('Duplicate Map')}
       </Button>
     )
   }
@@ -82,12 +84,13 @@ function ForkButton ({ primary }) {
       disabled={disabled}
       onClick={onClick}
       id='dekart-fork-button'
-      title={disabled ? disabledTitle : 'Duplicate Map'}
+      title={disabled ? disabledTitle : t('Duplicate Map')}
     />
   )
 }
 
 function RefreshButton ({ showAutoRefreshSettings = false }) {
+  const { t } = useI18n()
   const { canRefresh } = useSelector(state => state.report)
   const readOnly = useSelector(state => state.workspace.readOnly)
   const queriesRunning = useQueriesRunning()
@@ -108,7 +111,7 @@ function RefreshButton ({ showAutoRefreshSettings = false }) {
 
   const items = [
     {
-      label: 'Refresh Now',
+      label: t('Refresh Now'),
       key: 'refresh',
       id: 'dekart-refresh-now-button',
       icon: queriesRunning ? <LoadingOutlined /> : <ReloadOutlined />,
@@ -120,8 +123,10 @@ function RefreshButton ({ showAutoRefreshSettings = false }) {
     },
     {
       label: autoRefreshIntervalSeconds > 0
-        ? `Auto Refresh: ${formatIntervalLabel(autoRefreshIntervalSeconds)} ${edit ? '(paused)' : ''}`
-        : 'Auto Refresh Settings',
+        ? edit
+          ? t('Auto Refresh: {interval} (paused)', { interval: formatIntervalLabel(autoRefreshIntervalSeconds, t) })
+          : t('Auto Refresh: {interval}', { interval: formatIntervalLabel(autoRefreshIntervalSeconds, t) })
+        : t('Auto Refresh Settings'),
       key: 'auto-refresh',
       icon: <ClockCircleOutlined />,
       disabled: !canWrite || readOnly,
@@ -141,7 +146,7 @@ function RefreshButton ({ showAutoRefreshSettings = false }) {
           type='text'
           disabled={readOnly}
           icon={queriesRunning ? <LoadingOutlined /> : autoRefreshIntervalSeconds > 0 ? <span className={classNames({ [styles.shimmerIcon]: !edit })}><ClockCircleOutlined /></span> : <ReloadOutlined />}
-          title={readOnly ? 'Workspace is read-only' : autoRefreshIntervalSeconds > 0 ? 'Refresh (Auto-refresh enabled)' : 'Refresh'}
+          title={readOnly ? t('Workspace is read-only') : autoRefreshIntervalSeconds > 0 ? t('Refresh (Auto-refresh enabled)') : t('Refresh')}
         />
       </Dropdown>
       <AutoRefreshSettingsModal
@@ -197,6 +202,7 @@ function useRequireWorkspace () {
 }
 
 function WorkspaceOnboarding () {
+  const { t } = useI18n()
   const history = useHistory()
   const isAnonymous = useSelector(state => state.user.isAnonymous)
   useEffect(() => {
@@ -209,11 +215,11 @@ function WorkspaceOnboarding () {
           type='text' icon={<InfoCircleOutlined />}
           href='https://dekart.xyz/?ref=about-maps-button'
           target='_blank'
-          title='About this map'
+          title={t('About this map')}
           onClick={() => {
             track('AboutDekartMaps')
           }}
-        >About this map
+        >{t('About this map')}
         </Button>
       </div>
       {!isAnonymous && (
@@ -223,7 +229,7 @@ function WorkspaceOnboarding () {
             track('WorkspaceOnboardingCreateMap')
             history.push('/workspace')
           }}
-        >Create Map
+        >{t('Create Map')}
         </Button>
       )}
     </div>
@@ -231,6 +237,7 @@ function WorkspaceOnboarding () {
 }
 
 function EditModeButtons () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const { canWrite } = useSelector(state => state.report)
   const { saving, mapConfigConflict } = useSelector(state => state.reportStatus)
@@ -250,7 +257,7 @@ function EditModeButtons () {
             <ForkButton />
             <Button
               id='dekart-save-button'
-              title={readOnly ? 'Workspace is read-only' : mapConfigConflict || widgetsConflict ? 'Reload before saving' : saving ? 'Saving...' : 'Save this map'}
+              title={readOnly ? t('Workspace is read-only') : mapConfigConflict || widgetsConflict ? t('Reload before saving') : saving ? t('Saving...') : t('Save this map')}
               type='text'
               ghost
               icon={saving || changed ? <CloudSyncOutlined /> : <CloudOutlined />}
@@ -276,33 +283,34 @@ function EditModeButtons () {
 }
 
 function ExportDropdown () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const { allowExport } = useSelector(state => state.report)
 
   const items = [
     {
-      label: 'Export:',
+      label: t('Export:'),
       disabled: true
     },
     {
       type: 'divider'
     },
     {
-      label: 'Map',
+      label: t('Map'),
       onClick: () => {
         track('ExportMap')
         dispatch(toggleModal(EXPORT_MAP_ID))
       }
     },
     {
-      label: 'Data',
+      label: t('Data'),
       onClick: () => {
         track('ExportData')
         dispatch(toggleModal(EXPORT_DATA_ID))
       }
     },
     {
-      label: 'Image',
+      label: t('Image'),
       onClick: () => {
         track('ExportImage')
         dispatch(toggleModal(EXPORT_IMAGE_ID))
@@ -313,7 +321,7 @@ function ExportDropdown () {
     <Dropdown menu={{ items }} placement='topLeft' disabled={!allowExport}>
       <Button
         type='text'
-        title={allowExport ? 'Export' : 'Exporting is disabled'}
+        title={allowExport ? t('Export') : t('Exporting is disabled')}
         icon={<DownloadOutlined />}
       />
     </Dropdown>
@@ -322,6 +330,7 @@ function ExportDropdown () {
 
 // adds history option to the dropdown after divider
 function ViewSelectDropdown ({ menu, onHistoryClick }) {
+  const { t } = useI18n()
   return (
     <>
       {menu}
@@ -333,13 +342,14 @@ function ViewSelectDropdown ({ menu, onHistoryClick }) {
         onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f5f5f5' }}
         onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
       >
-        <HistoryOutlined /> History
+        <HistoryOutlined /> {t('History')}
       </div>
     </>
   )
 }
 
 function ViewSelect ({ value }) {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const history = useHistory()
   const { id } = useSelector(state => state.report)
@@ -372,8 +382,8 @@ function ViewSelect ({ value }) {
         value={value}
         onChange={handleChange}
         options={[
-          { value: 'view', label: <><EyeOutlined /> Viewing</> },
-          { value: 'edit', label: <><EditOutlined /> Editing</> }
+          { value: 'view', label: <><EyeOutlined /> {t('Viewing')}</> },
+          { value: 'edit', label: <><EditOutlined /> {t('Editing')}</> }
         ]}
         dropdownRender={(menu) => (
         // add history option to the dropdown after divider

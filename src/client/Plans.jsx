@@ -12,6 +12,7 @@ import Tooltip from 'antd/es/tooltip'
 import classNames from 'classnames'
 import { track } from './lib/tracking'
 import PricingBlock from './PricingBlock'
+import { useI18n } from './i18n'
 
 export function PlanTitle ({ name, price, icon, color, description, selected }) {
   return (
@@ -30,6 +31,7 @@ export function PlanTitle ({ name, price, icon, color, description, selected }) 
 }
 
 function ManageSubscriptionButton ({ disabled, loading, cancelAt, onManage }) {
+  const { t, formatDate } = useI18n()
   return (
     <>
       <Button
@@ -39,11 +41,11 @@ function ManageSubscriptionButton ({ disabled, loading, cancelAt, onManage }) {
         type='default'
         className={styles.actionButton}
       >
-        Manage subscription
+        {t('Manage subscription')}
       </Button>
       {Boolean(cancelAt) && (
         <div className={styles.cancelAt}>
-          Cancels {(new Date(1000 * cancelAt)).toLocaleDateString()}
+          {t('Cancels {date}', { date: formatDate(new Date(1000 * cancelAt)) })}
         </div>
       )}
     </>
@@ -51,6 +53,7 @@ function ManageSubscriptionButton ({ disabled, loading, cancelAt, onManage }) {
 }
 
 export function Plan ({ title, children, planType, cancelAt, isCurrentPlan, primaryAction }) {
+  const { t } = useI18n()
   const [hover, setHover] = useState(false)
   const userStream = useSelector(state => state.user.stream)
   const dispatch = useDispatch()
@@ -76,7 +79,7 @@ export function Plan ({ title, children, planType, cancelAt, isCurrentPlan, prim
       ghost={hover && !isCurrentPlan && !primaryAction}
       className={styles.actionButton}
     >
-      {isCurrentPlan ? 'Continue' : 'Upgrade'}
+      {isCurrentPlan ? t('Continue') : t('Upgrade')}
     </Button>
   )
 
@@ -119,11 +122,12 @@ export function Plan ({ title, children, planType, cancelAt, isCurrentPlan, prim
 
 // TrialStatusCard shows remaining trial time and the single upgrade action.
 function TrialStatusCard () {
+  const { t } = useI18n()
   const cancelAt = useSelector(state => state.workspace.subscription?.cancelAt)
   const actualDaysLeft = Math.ceil(((cancelAt || 0) * 1000 - Date.now()) / (24 * 60 * 60 * 1000))
   if (actualDaysLeft > 14) return null
   const daysLeft = Math.max(0, actualDaysLeft)
-  const daysLabel = daysLeft === 1 ? '1 day left' : `${daysLeft} days left`
+  const daysLabel = daysLeft === 1 ? t('1 day left') : t('{count} days left', { count: daysLeft })
   const trialPercent = `${Math.round((daysLeft / 14) * 100)}%`
 
   return (
@@ -131,28 +135,29 @@ function TrialStatusCard () {
       <div className={styles.trialStatusHeader}>
         <div className={styles.trialDays}>
           <strong>{daysLabel}</strong>
-          <span>of your 14-day trial</span>
+          <span>{t('of your 14-day trial')}</span>
         </div>
-        <div className={styles.trialSummary}>Unlimited maps, editors, viewers and database connections.</div>
+        <div className={styles.trialSummary}>{t('Unlimited maps, editors, viewers and database connections.')}</div>
       </div>
       <div className={styles.trialProgress}>
         <div style={{ width: trialPercent }} />
       </div>
-      <div className={styles.trialNotice}>When the trial ends, your workspace becomes read-only and your maps stay viewable.</div>
+      <div className={styles.trialNotice}>{t('When the trial ends, your workspace becomes read-only and your maps stay viewable.')}</div>
     </div>
   )
 }
 
 // TrialEndedCard replaces the active-trial progress with the recovery actions.
 function TrialEndedCard ({ isAdmin }) {
+  const { t } = useI18n()
   return (
     <div className={styles.trialEnded}>
       <div>
-        <div className={styles.trialEndedHeadline}>Your trial has ended</div>
+        <div className={styles.trialEndedHeadline}>{t('Your trial has ended')}</div>
         <div className={styles.trialEndedDescription}>
           {isAdmin
-            ? 'The workspace is read-only and your maps stay viewable. Upgrade below to start editing again, or book a call to extend the trial.'
-            : 'The workspace is read-only and your maps stay viewable. Ask your workspace admin to upgrade, or book a call to extend the trial.'}
+            ? t('The workspace is read-only and your maps stay viewable. Upgrade below to start editing again, or book a call to extend the trial.')
+            : t('The workspace is read-only and your maps stay viewable. Ask your workspace admin to upgrade, or book a call to extend the trial.')}
         </div>
       </div>
       <Button
@@ -160,13 +165,14 @@ function TrialEndedCard ({ isAdmin }) {
         target='_blank'
         rel='noreferrer'
         onClick={() => track('BookCallFromTrialEndedCard')}
-      >Book a call
+      >{t('Book a call')}
       </Button>
     </div>
   )
 }
 
 export default function Plans () {
+  const { t } = useI18n()
   const userStream = useSelector(state => state.user.stream)
   const workspace = useSelector(state => state.workspace)
   const isAdmin = useSelector(state => state.user.isAdmin)
@@ -181,9 +187,9 @@ export default function Plans () {
             <Plan
               title={<PlanTitle
                 name='Team'
-                price='$100/month'
+                price={t('$100/month')}
                 selected={userStream.planType === PlanType.TYPE_TEAM}
-                description={<Tooltip placement='bottom' title='You can continue using Team plan. If you switch to another plan you will not be able to switch back.'><Tag color='red'>Deprecated</Tag></Tooltip>}
+                description={<Tooltip placement='bottom' title={t('You can continue using Team plan. If you switch to another plan you will not be able to switch back.')}><Tag color='red'>{t('Deprecated')}</Tag></Tooltip>}
                      />}
               planType={PlanType.TYPE_TEAM}
               cancelAt={workspace?.subscription?.cancelAt}
@@ -191,15 +197,15 @@ export default function Plans () {
             >
               <div className={styles.feature}>
                 <CheckOutlined className={styles.checkIcon} />
-                <Text>Everything from Personal</Text>
+                <Text>{t('Everything from Personal')}</Text>
               </div>
               <div className={styles.feature}>
                 <CheckOutlined className={styles.checkIcon} />
-                <Text>Unlimited Maps</Text>
+                <Text>{t('Unlimited Maps')}</Text>
               </div>
               <div className={styles.feature}>
                 <CheckOutlined className={styles.checkIcon} />
-                <Text>20 seats included</Text>
+                <Text>{t('20 seats included')}</Text>
               </div>
             </Plan>
             )
@@ -213,11 +219,11 @@ export default function Plans () {
         >
           <div className={styles.feature}>
             <CheckOutlined className={styles.checkIcon} />
-            <Text>Unlimited maps and database connectors</Text>
+            <Text>{t('Unlimited maps and database connectors')}</Text>
           </div>
           <div className={styles.feature}>
             <CheckOutlined className={styles.checkIcon} />
-            <Text>Unlimited viewers, always free</Text>
+            <Text>{t('Unlimited viewers, always free')}</Text>
           </div>
         </Plan>
         <Plan
@@ -228,11 +234,11 @@ export default function Plans () {
         >
           <div className={styles.feature}>
             <CheckOutlined className={styles.checkIcon} />
-            <Text>Everything in Grow</Text>
+            <Text>{t('Everything in Grow')}</Text>
           </div>
           <div className={styles.feature}>
             <CheckOutlined className={styles.checkIcon} />
-            <Text>Unlimited editors</Text>
+            <Text>{t('Unlimited editors')}</Text>
           </div>
         </Plan>
       </div>

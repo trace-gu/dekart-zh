@@ -2,11 +2,13 @@ import keplerGlReducer from '@kepler.gl/reducers'
 import { ActionTypes as KeplerActionTypes } from '@kepler.gl/actions'
 import { setUserMapboxAccessTokenUpdater } from '@kepler.gl/reducers/dist/ui-state-updaters'
 import { createFilterRestore } from '../dark/kepler-filter-restore/index'
+import { keplerLocaleFor, resolveLocale } from '../i18n/locale'
 
 const customKeplerGlReducer = keplerGlReducer.initialState({
   uiState: {
     currentModal: null,
-    activeSidePanel: null
+    activeSidePanel: null,
+    locale: keplerLocaleFor(resolveLocale())
   },
   mapStyle: {
     styleType: 'dark'

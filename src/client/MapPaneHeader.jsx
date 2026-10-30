@@ -1,9 +1,11 @@
 import { Layers, ChartNoAxesColumn, ChevronLeft, ChevronRight } from 'lucide-react'
 import classnames from 'classnames'
 import styles from './MapPaneHeader.module.css'
+import { useI18n } from './i18n'
 
 // One persistent anchor for both editors, including when their bodies are collapsed.
 export default function MapPaneHeader ({ selected, expanded, onSelect, onToggle }) {
+  const { t } = useI18n()
   const tabs = ['widgets', 'map']
   const navigate = event => {
     const direction = { ArrowRight: 1, ArrowLeft: -1, Home: -tabs.length, End: tabs.length }[event.key]
@@ -14,16 +16,16 @@ export default function MapPaneHeader ({ selected, expanded, onSelect, onToggle 
     event.currentTarget.querySelectorAll('[role="tab"]')[index].focus()
   }
   return (
-    <div className={classnames(styles.header, { [styles.collapsed]: !expanded })} aria-label='Map panels'>
-      <div className={styles.tabs} role='tablist' aria-label='Control pane' onKeyDown={navigate}>
+    <div className={classnames(styles.header, { [styles.collapsed]: !expanded })} aria-label={t('Map panels')}>
+      <div className={styles.tabs} role='tablist' aria-label={t('Control pane')} onKeyDown={navigate}>
         {tabs.map(panel => (
           <button key={panel} role='tab' data-testid={panel === 'map' ? 'map-settings-tab' : 'widgets-tab'} aria-selected={selected === panel} aria-expanded={selected === panel && expanded} tabIndex={selected === panel ? 0 : -1} onClick={() => onSelect(panel)}>
             {panel === 'map' ? <Layers size={15} /> : <ChartNoAxesColumn size={15} />}
-            {panel === 'map' ? 'Map layers' : 'Charts'}
+            {panel === 'map' ? t('Map layers') : t('Charts')}
           </button>
         ))}
       </div>
-      <button className={styles.collapse} aria-label={expanded ? 'Collapse control pane' : 'Expand control pane'} aria-expanded={expanded} onClick={onToggle}>
+      <button className={styles.collapse} aria-label={expanded ? t('Collapse control pane') : t('Expand control pane')} aria-expanded={expanded} onClick={onToggle}>
         {expanded ? <ChevronLeft size={15} /> : <ChevronRight size={15} />}
       </button>
     </div>

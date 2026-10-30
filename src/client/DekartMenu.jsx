@@ -8,10 +8,12 @@ import { createReport } from './actions/report'
 import Tooltip from 'antd/es/tooltip'
 import { track } from './lib/tracking'
 import { ConnectionType } from 'dekart-proto/dekart_pb'
+import { useI18n } from './i18n'
 
 const popupOffset = [-10, 0]
 
 export default function DekartMenu () {
+  const { t } = useI18n()
   const env = useSelector(state => state.env)
   const usage = useSelector(state => state.usage)
   const connections = useSelector(state => state.connection.list)
@@ -38,27 +40,27 @@ export default function DekartMenu () {
             ? (
               <>
                 <Menu.Item key='my' onClick={() => track('NavigateToMyMaps')}>
-                  <Link to='/'>My Maps</Link>
+                  <Link to='/'>{t('My Maps')}</Link>
                 </Menu.Item>
                 <Menu.Item key='shared' disabled={isPlayground} onClick={() => track('NavigateToSharedMaps')}>
-                  <Link to='/shared'>Shared Maps</Link>
+                  <Link to='/shared'>{t('Shared Maps')}</Link>
                 </Menu.Item>
               </>
               )
             : (
               <>
                 <Menu.Item key='reports' onClick={() => track('NavigateToMaps')}>
-                  <Link to='/'>Maps</Link>
+                  <Link to='/'>{t('Maps')}</Link>
                 </Menu.Item>
                 <Menu.Item key='shared-disabled' disabled>
-                  <span>Shared Maps</span>
+                  <span>{t('Shared Maps')}</span>
                 </Menu.Item>
               </>
               )}
           {userDefinedConnection
             ? (
               <Menu.Item key='connections' onClick={() => track('NavigateToConnections')}>
-                <Link to='/connections'>Connections</Link>
+                <Link to='/connections'>{t('Connections')}</Link>
               </Menu.Item>
               )
             : null}
@@ -70,17 +72,17 @@ export default function DekartMenu () {
               dispatch(createReport())
             }}
           >
-            New Map
+            {t('New Map')}
           </Menu.Item>
           <Menu.Divider />
           {isSnowpark && (
             <Menu.Item key='snowflake-kepler-gl-examples' onClick={() => track('ClickedSnowflakeKeplerGlExamples')}>
-              <a target='_blank' rel='noopener noreferrer' href={'https://dekart.xyz/docs/snowflake-snowpark/about/?ref=' + ref}>Configure Access</a>
+              <a target='_blank' rel='noopener noreferrer' href={'https://dekart.xyz/docs/snowflake-snowpark/about/?ref=' + ref}>{t('Configure Access')}</a>
             </Menu.Item>
           )}
           {!isSnowpark && showBigQueryOvertureSkill && (
             <Menu.Item key='bigquery-overture-skill' onClick={() => track('ClickedClaudeSkill')}>
-              <a target='_blank' rel='noopener noreferrer' href='https://github.com/dekart-xyz/geosql'>Claude Skill</a>
+              <a target='_blank' rel='noopener noreferrer' href='https://github.com/dekart-xyz/geosql'>{t('Claude Skill')}</a>
             </Menu.Item>
           )}
           <Menu.Item key='examples' onClick={() => track('ClickedMapExamples')}>
@@ -88,17 +90,17 @@ export default function DekartMenu () {
               target='_blank' rel='noopener noreferrer' href={
               isSnowpark ? 'https://dekart.xyz/docs/about/snowflake-kepler-gl-examples/?ref=' + ref : 'https://dekart.xyz/docs/about/kepler-gl-map-examples?ref=' + ref
             }
-            >Map Examples
+            >{t('Map Examples')}
             </a>
           </Menu.Item>
           <Menu.Item key='slack' onClick={() => track('ClickedAskInSlack')}>
-            <a target='_blank' rel='noopener noreferrer' href='https://slack.dekart.xyz'>Slack Support</a>
+            <a target='_blank' rel='noopener noreferrer' href='https://slack.dekart.xyz'>{t('Slack Support')}</a>
           </Menu.Item>
         </Menu.SubMenu>
         {
           !isSnowpark && (
             <Menu.Item key='contribute' onClick={() => track('ClickedGitHubStar')}>
-              <Tooltip color='#328EB2' title={<>Loving Dekart?<br />Help community find it.<br />Give us ⭐️ on GitHub!</>}><a target='_blank' rel='noopener noreferrer' href='https://github.com/dekart-xyz/dekart'>🩵</a></Tooltip>
+              <Tooltip color='#328EB2' title={<>{t('Loving Dekart?')}<br />{t('Help community find it.')}<br />{t('Give us ⭐️ on GitHub!')}</>}><a target='_blank' rel='noopener noreferrer' href='https://github.com/dekart-xyz/dekart'>🩵</a></Tooltip>
             </Menu.Item>
           )
         }

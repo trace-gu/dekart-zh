@@ -5,8 +5,10 @@ import { useSelector } from 'react-redux'
 import { useLocation, useHistory } from 'react-router-dom'
 import { track } from './lib/tracking'
 import { GetWorkspaceResponse } from 'dekart-proto/dekart_pb'
+import { useI18n } from './i18n'
 
 export default function WorkspaceReadOnlyBanner () {
+  const { t } = useI18n()
   const readOnly = useSelector(state => state.workspace.readOnly)
   const readOnlyReason = useSelector(state => state.workspace.readOnlyReason)
   const isTrial = useSelector(state => state.user.isTrial)
@@ -39,8 +41,8 @@ export default function WorkspaceReadOnlyBanner () {
   return (
     <div className={styles.banner} role='status'>
       <div className={styles.message}>
-        <div className={styles.headline}>{headline}</div>
-        {detail ? <div className={styles.detail}>{detail}</div> : null}
+        <div className={styles.headline}>{t(headline)}</div>
+        {detail ? <div className={styles.detail}>{t(detail)}</div> : null}
       </div>
       <div className={styles.actions}>
         {(trialExpired || trialNotStarted) && (
@@ -51,7 +53,7 @@ export default function WorkspaceReadOnlyBanner () {
               trackClick('See plans')
               history.push('/workspace/plan')
             }}
-          >See plans
+          >{t('See plans')}
           </Button>
         )}
         <Button
@@ -61,7 +63,7 @@ export default function WorkspaceReadOnlyBanner () {
             trackClick(ctaLabel)
             if (!trialExpired && !licenseExpired) history.push(trialNotStarted ? '/workspace/trial' : '/workspace/plan')
           }}
-        >{ctaLabel}
+        >{t(ctaLabel)}
         </Button>
       </div>
     </div>

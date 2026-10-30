@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { applyQueryParams, closeQueryParamSettings, openQueryParamSettings, queryParamChanged, setQueryParamValue, updateQueryParamsFromURL } from './actions/query'
 import { useLocation } from 'react-router-dom'
 import { useQueriesRunning } from './lib/useQueriesRunning'
+import { useI18n } from './i18n'
 
 function Label ({ children }) {
   return (
@@ -55,16 +56,17 @@ function TextParameter ({ queryParam }) {
 }
 
 function ModalContent ({ form }) {
+  const { t } = useI18n()
   return (
     <div>
       <Form form={form} layout='vertical'>
-        <Form.Item label='Name' name='name'>
+        <Form.Item label={t('Name')} name='name'>
           <Input readOnly />
         </Form.Item>
-        <Form.Item label='Label' name='label'>
+        <Form.Item label={t('Label')} name='label'>
           <Input />
         </Form.Item>
-        <Form.Item label='Default Value' name='defaultValue'>
+        <Form.Item label={t('Default Value')} name='defaultValue'>
           <Input />
         </Form.Item>
       </Form>
@@ -73,16 +75,18 @@ function ModalContent ({ form }) {
 }
 
 function ModalFooter ({ onSave }) {
+  const { t } = useI18n()
   const disabled = !useCanEditReport()
 
   return (
     <div>
-      <Button type='primary' disabled={disabled} onClick={onSave}>Save</Button>
+      <Button type='primary' disabled={disabled} onClick={onSave}>{t('Save')}</Button>
     </div>
   )
 }
 
 export default function QueryParams () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const [form] = Form.useForm()
   const location = useLocation()
@@ -106,13 +110,13 @@ export default function QueryParams () {
 
   const applyButtonDisabledReason = (
     reportChanged
-      ? 'Save map changes before applying query parameters'
+      ? t('Save map changes before applying query parameters')
       : queriesRunning
-        ? 'Wait for running queries to finish'
+        ? t('Wait for running queries to finish')
         : !canRefresh
-            ? 'Map is read-only'
+            ? t('Map is read-only')
             : tempDisabled
-              ? 'Applying query parameters...'
+              ? t('Applying query parameters...')
               : ''
   )
 
@@ -164,7 +168,7 @@ export default function QueryParams () {
                 <Button
                   type='primary'
                   ghost
-                  title='Apply query parameters'
+                  title={t('Apply query parameters')}
                   icon={<DoubleRightOutlined />}
                   htmlType='submit'
                   disabled={applyButtonDisabled}
@@ -174,7 +178,7 @@ export default function QueryParams () {
           </Form.Item>
         </Form>
         <Modal
-          title='Query Parameter'
+          title={t('Query Parameter')}
           open={name}
           onCancel={() => dispatch(closeQueryParamSettings(null))}
           footer={<ModalFooter onSave={() => {

@@ -15,6 +15,7 @@ import { useMosaicDashboardContext } from '@sqlrooms/mosaic/dist/dashboard/Mosai
 import { usePanelResetFilters } from '@sqlrooms/mosaic/dist/dashboard/hooks/usePanelResetFilters'
 import { ResetFiltersButton } from '@sqlrooms/mosaic/dist/dashboard/components/ResetFiltersButton'
 import { useWidgetSlot } from './WidgetPanel'
+import { useI18n } from '../i18n'
 import styles from './ChartHeaderActions.module.css'
 
 function resetPanelFilters (reset, dispatch, matchingFilters) {
@@ -45,6 +46,7 @@ function deletePanel (dispatch, filters, removePanel, clearSelection, dashboardI
 // Keep upstream editing and filter actions, with destructive actions tucked into a menu.
 export default function ChartHeaderActions (props) {
   const { dashboardId, panel, selectionName } = props
+  const { t } = useI18n()
   const { readOnly } = useMosaicDashboardContext()
   const slot = useWidgetSlot()
   const dispatch = useDispatch()
@@ -69,13 +71,13 @@ export default function ChartHeaderActions (props) {
       <ResetFiltersButton
         disabled={!hasActiveFilters && matchingFilters.length === 0}
         onClick={() => resetPanelFilters(reset, dispatch, matchingFilters)}
-        aria-label={`Reset ${panel.title} filters`}
-        tooltip='Reset panel filters'
+        aria-label={t('Reset {panel} filters', { panel: panel.title })}
+        tooltip={t('Reset panel filters')}
       />
       {!readOnly && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button aria-label='Chart actions' className={styles.trigger}>
+            <button aria-label={t('Chart actions')} className={styles.trigger}>
               <MoreVertical size={14} />
             </button>
           </DropdownMenuTrigger>
@@ -84,13 +86,13 @@ export default function ChartHeaderActions (props) {
               disabled={slot?.locked}
               onSelect={() => editPanel(selectBlock, openSettings, { dashboardId, panel, readOnly })}
             >
-              Edit chart
+              {t('Edit chart')}
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={slot?.locked}
               onSelect={() => deletePanel(dispatch, filters, removePanel, clearSelection, dashboardId, panel.id)}
             >
-              Delete chart
+              {t('Delete chart')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

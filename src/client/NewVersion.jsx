@@ -6,8 +6,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { GiftOutlined } from '@ant-design/icons'
 import { getUrlRef } from './lib/ref'
 import { testVersion } from './actions/version'
+import { useI18n } from './i18n'
 
 export default function NewVersion () {
+  const { t } = useI18n()
   const release = useSelector(state => state.release)
   const env = useSelector(state => state.env)
   const usage = useSelector(state => state.usage)
@@ -26,12 +28,12 @@ export default function NewVersion () {
         <div className={styles.message}>
           <GiftOutlined className={styles.icon} aria-hidden />
           <Text className={styles.headline}>
-            New release {release.tag_name} available
+            {t('New release {version} available', { version: release.tag_name })}
           </Text>
         </div>
         <div className={styles.actions}>
-          <Button type='default' ghost href={release.html_url + '?ref=' + ref}>Update</Button>
-          <Button type='link' className={styles.releaseNotesLink} href={release.html_url + '?ref=' + ref}>Release Notes</Button>
+          <Button type='default' ghost href={release.html_url + '?ref=' + ref}>{t('Update')}</Button>
+          <Button type='link' className={styles.releaseNotesLink} href={release.html_url + '?ref=' + ref}>{t('Release Notes')}</Button>
         </div>
       </div>
     )

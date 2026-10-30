@@ -23,8 +23,10 @@ import GeoSQLBanner from './GeoSQLBanner'
 import { DUCKDB_DATASOURCE, DuckDBJobStatus, isDuckDBQuery } from './lib/duckdb/constants'
 import { getDuckDBSources, registerDuckDBCompleter } from './lib/duckdb/datasets'
 import SampleQuery from './SampleQuery'
+import { useI18n } from './i18n'
 
 function CancelButton ({ queryJob }) {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   return (
     <Button
@@ -34,7 +36,7 @@ function CancelButton ({ queryJob }) {
         track('QueryCancelled', { jobId: queryJob.id })
         dispatch(cancelJob(queryJob.id))
       }}
-    >Cancel
+    >{t('Cancel')}
     </Button>
   )
 }
@@ -250,6 +252,7 @@ function QueryEditor ({ queryId, queryText, onChange, canWrite, canExecute, onEx
 }
 
 function QueryStatus ({ children, query }) {
+  const { t } = useI18n()
   const hash = useSelector(state => state.queryParams.hash)
   const queryJob = useSelector(state => state.queryJobs.find(job => job.queryId === query.id && job.queryParamsHash === hash))
   const isDuckDB = isDuckDBQuery(query)
@@ -305,10 +308,10 @@ function QueryStatus ({ children, query }) {
 
   if (isDuckDB && queryExecutionPending) {
     icon = <ClockCircleTwoTone className={styles.icon} twoToneColor='#B8B8B8' />
-    message = 'Running'
+    message = t('Running')
     style = styles.info
   } else if (isDuckDB && query.duckdbValidationError) {
-    message = 'Query Error'
+    message = t('Query Error')
     style = styles.error
     errorMessage = query.duckdbValidationError
     icon = <ExclamationCircleTwoTone className={styles.icon} twoToneColor='#F66B55' />
@@ -316,26 +319,26 @@ function QueryStatus ({ children, query }) {
     const localStatus = duckDBJobState?.status
     if ((queryJob.jobStatus === QueryJob.JobStatus.JOB_STATUS_UNSPECIFIED && queryJob.jobError) ||
       localStatus === DuckDBJobStatus.DUCKDB_JOB_STATUS_ERROR) {
-      message = 'Query Error'
+      message = t('Query Error')
       style = styles.error
       errorMessage = duckDBJobState?.error || queryJob.jobError
       icon = <ExclamationCircleTwoTone className={styles.icon} twoToneColor='#F66B55' />
     } else if (!localStatus ||
       localStatus === DuckDBJobStatus.DUCKDB_JOB_STATUS_WAITING_FOR_SOURCES) {
       icon = <ClockCircleTwoTone className={styles.icon} twoToneColor='#B8B8B8' />
-      message = 'Waiting for source data'
+      message = t('Waiting for source data')
       style = styles.info
     } else if (localStatus === DuckDBJobStatus.DUCKDB_JOB_STATUS_RUNNING) {
       icon = <ClockCircleTwoTone className={styles.icon} twoToneColor='#B8B8B8' />
-      message = 'Running'
+      message = t('Running')
       style = styles.info
     } else if (localStatus === DuckDBJobStatus.DUCKDB_JOB_STATUS_READY) {
       icon = <CheckCircleTwoTone className={styles.icon} twoToneColor='#52c41a' />
-      message = <span>Ready</span>
+      message = <span>{t('Ready')}</span>
       style = styles.success
     }
   } else if (queryJob?.jobError) {
-    message = 'Query Error'
+    message = t('Query Error')
     style = styles.error
     errorMessage = queryJob.jobError
     icon = <ExclamationCircleTwoTone className={styles.icon} twoToneColor='#F66B55' />
@@ -343,37 +346,37 @@ function QueryStatus ({ children, query }) {
     switch (queryJob?.jobStatus) {
       case QueryJob.JobStatus.JOB_STATUS_PENDING:
         icon = <ClockCircleTwoTone className={styles.icon} twoToneColor='#B8B8B8' />
-        message = 'Pending'
+        message = t('Pending')
         style = styles.info
         action = <StatusActions queryJob={queryJob} />
         break
       case QueryJob.JobStatus.JOB_STATUS_RUNNING:
         icon = <ClockCircleTwoTone className={styles.icon} twoToneColor='#B8B8B8' />
-        message = 'Running'
+        message = t('Running')
         style = styles.info
         action = <StatusActions queryJob={queryJob} />
         break
       case QueryJob.JobStatus.JOB_STATUS_DONE_LEGACY:
         if (!queryJob.jobResultId) {
-          message = 'Reading Result'
+          message = t('Reading Result')
           style = styles.info
           icon = <ClockCircleTwoTone className={styles.icon} twoToneColor='#B8B8B8' />
           action = <StatusActions queryJob={queryJob} />
           break
         }
         icon = <CheckCircleTwoTone className={styles.icon} twoToneColor='#52c41a' />
-        message = <span>Ready</span>
+        message = <span>{t('Ready')}</span>
         style = styles.success
         break
       case QueryJob.JobStatus.JOB_STATUS_READING_RESULTS:
-        message = 'Reading Result'
+        message = t('Reading Result')
         style = styles.info
         icon = <ClockCircleTwoTone className={styles.icon} twoToneColor='#B8B8B8' />
         action = <StatusActions queryJob={queryJob} />
         break
       case QueryJob.JobStatus.JOB_STATUS_DONE:
         icon = <CheckCircleTwoTone className={styles.icon} twoToneColor='#52c41a' />
-        message = <span>Ready</span>
+        message = <span>{t('Ready')}</span>
         style = styles.success
         break
       default:
@@ -396,11 +399,11 @@ function QueryStatus ({ children, query }) {
                     dispatch(copyErrorToClipboard(errorMessage))
                   }}
                   className={styles.copyErrorButton}
-                  title='Copy error to clipboard'
+                  title={t('Copy error to clipboard')}
                 />
 
                 <div className={styles.errorMessageContent}>
-                  <span id='dekart-query-status-message' className={styles.messageInline}>{message}</span> {errorMessage}
+                  <span id='dekart-query-status-message' className={styles.messageInline}>{message}</span> {t(errorMessage)}
                 </div>
               </div>
               )
@@ -422,6 +425,7 @@ function useConnectionType (connectionId, fallbackConnectionType) {
 }
 
 export default function Query ({ query }) {
+  const { t } = useI18n()
   const { canRun, changed, queryText } = useSelector(state => state.queryStatus[query.id])
   const { canWrite } = useSelector(state => state.report)
   const readOnly = useSelector(state => state.workspace.readOnly)
@@ -466,9 +470,9 @@ export default function Query ({ query }) {
                 size='large'
                 disabled={!canExecute}
                 icon={<SendOutlined />}
-                title={readOnly ? 'Workspace is read-only' : 'Execute query (Cmd/Ctrl+Enter)'}
+                title={readOnly ? t('Workspace is read-only') : t('Execute query (Cmd/Ctrl+Enter)')}
                 onClick={executeQuery}
-              >Execute
+              >{t('Execute')}
               </Button>
               )
             : null

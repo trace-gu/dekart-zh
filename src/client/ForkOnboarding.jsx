@@ -13,6 +13,7 @@ import { track } from './lib/tracking'
 import { ConnectionType } from 'dekart-proto/dekart_pb'
 import { isSystemConnectionID } from './actions/connection'
 import { isDuckDBDataset } from './lib/duckdb/constants'
+import { useI18n } from './i18n'
 
 export function useRequireOnboarding () {
   const userDefinedConnection = useSelector(state => state.connection.userDefined)
@@ -66,6 +67,7 @@ export function useRequireOnboarding () {
 }
 
 export function ForkOnboarding ({ requireOnboarding: { requireWorkspace, missingConnectionTypes, alreadyConnectedTypes }, edit }) {
+  const { t } = useI18n()
   const [visible, setVisible] = useState(false)
   const dispatch = useDispatch()
   const current = requireWorkspace ? 0 : 1 + alreadyConnectedTypes.length
@@ -78,47 +80,47 @@ export function ForkOnboarding ({ requireOnboarding: { requireWorkspace, missing
           track('CreateWorkspaceFromForkOnboarding')
           history.push('/workspace')
         }}
-      >Create Free Workspace
+      >{t('Create Free Workspace')}
       </Button>
       )
-    : <Button type='primary' onClick={() => history.push('/connections')}>Connect {getDatasourceMeta(missingConnectionTypes[0]).name}</Button>
+    : <Button type='primary' onClick={() => history.push('/connections')}>{t('Connect {name}', { name: getDatasourceMeta(missingConnectionTypes[0]).name })}</Button>
 
   useEffect(() => {
     track('ForkOnboarding')
   }, [])
   return (
     <>
-      <Tooltip title='Copy and edit this map in your Dekart Workspace.'>
+      <Tooltip title={t('Copy and edit this map in your Dekart Workspace.')}>
         <Button
           type='primary' icon={<ForkOutlined />} onClick={() => {
             setVisible(true)
             dispatch(updateSessionStorage('redirectWhenSaveConnection', { reportId, edit }))
             track('ForkOnboardingStart')
           }}
-        >Duplicate Map
+        >{t('Duplicate Map')}
         </Button>
       </Tooltip>
       <Modal
         width={600}
         open={visible}
-        title='Duplicate Map'
+        title={t('Duplicate Map')}
         onCancel={() => setVisible(false)}
         footer={<div className={styles.modalFooter}>{button}</div>}
-      ><p className={styles.description}>Create your own copy of this map by setting up a workspace, connecting your data, and duplicating it to use with your own queries.</p>
+      ><p className={styles.description}>{t('Create your own copy of this map by setting up a workspace, connecting your data, and duplicating it to use with your own queries.')}</p>
         <Steps
           size='small'
           current={current}
           items={[
             {
-              title: 'Create Workspace',
-              description: '10 seconds'
+              title: t('Create Workspace'),
+              description: t('10 seconds')
             }
           ].concat(alreadyConnectedTypes.concat(missingConnectionTypes).map(getDatasourceMeta).map(({ name, style, usageStatsId }) => ({
-            title: `Connect ${name}`,
-            description: '15 seconds'
+            title: t('Connect {name}', { name }),
+            description: t('15 seconds')
           }))).concat({
-            title: 'Duplicate Map',
-            description: '5 seconds'
+            title: t('Duplicate Map'),
+            description: t('5 seconds')
           })}
         />
       </Modal>

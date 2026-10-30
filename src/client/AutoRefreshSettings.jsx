@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { track } from './lib/tracking'
 import { goToPresent } from './lib/navigation'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom'
+import { useI18n } from './i18n'
 
 const INTERVAL_OPTIONS = [
   { value: 0, label: 'None' },
@@ -26,8 +27,15 @@ const INTERVAL_OPTIONS = [
   { value: 86400, label: '24 hours' }
 ]
 
+// Localize interval option labels at render time.
+function intervalOptions (t) {
+  return INTERVAL_OPTIONS.map(option => ({ ...option, label: t(option.label) }))
+}
+
 function ModalContent ({ interval, onIntervalChange, loading, edit }) {
-  const intervalLabel = INTERVAL_OPTIONS.find(opt => opt.value === interval)?.label || 'None'
+  const { t } = useI18n()
+  const options = intervalOptions(t)
+  const intervalLabel = options.find(opt => opt.value === interval)?.label || t('None')
   const isEnabled = interval > 0
   const history = useHistory()
   const { id: reportId } = useSelector(state => state.report)
@@ -40,11 +48,11 @@ function ModalContent ({ interval, onIntervalChange, loading, edit }) {
             <PauseOutlined />
           </div>
           <div className={shareStyles.boolStatusLabel}>
-            <div className={shareStyles.statusLabelTitle}>Auto-refresh is paused in edit mode</div>
-            <div className={shareStyles.statusLabelDescription}>Auto-refresh will resume when you switch to view mode.</div>
+            <div className={shareStyles.statusLabelTitle}>{t('Auto-refresh is paused in edit mode')}</div>
+            <div className={shareStyles.statusLabelDescription}>{t('Auto-refresh will resume when you switch to view mode.')}</div>
           </div>
           <div className={shareStyles.boolStatusControl}>
-            <Button onClick={() => goToPresent(history, reportId)}>View Mode</Button>
+            <Button onClick={() => goToPresent(history, reportId)}>{t('View Mode')}</Button>
           </div>
         </div>
       )}
@@ -53,11 +61,11 @@ function ModalContent ({ interval, onIntervalChange, loading, edit }) {
           <ClockCircleOutlined />
         </div>
         <div className={shareStyles.boolStatusLabel}>
-          <div className={shareStyles.statusLabelTitle}>Refresh Interval</div>
+          <div className={shareStyles.statusLabelTitle}>{t('Refresh Interval')}</div>
           <div className={shareStyles.statusLabelDescription}>
             {isEnabled
-              ? `Queries will automatically re-run every ${intervalLabel.toLowerCase()} when the map is in view mode.`
-              : 'Auto-refresh is disabled. Select an interval to enable auto-refresh.'}
+              ? t('Queries will automatically re-run every {interval} when the map is in view mode.', { interval: intervalLabel.toLowerCase() })
+              : t('Auto-refresh is disabled. Select an interval to enable auto-refresh.')}
           </div>
         </div>
         <div className={shareStyles.boolStatusControl}>
@@ -65,7 +73,7 @@ function ModalContent ({ interval, onIntervalChange, loading, edit }) {
             value={interval}
             onChange={onIntervalChange}
             style={{ minWidth: 130 }}
-            options={INTERVAL_OPTIONS}
+            options={options}
             disabled={loading}
             loading={loading}
           />
@@ -76,6 +84,7 @@ function ModalContent ({ interval, onIntervalChange, loading, edit }) {
 }
 
 export function AutoRefreshSettingsModal ({ visible, onClose }) {
+  const { t } = useI18n()
   const autoRefreshIntervalSeconds = useSelector(state => state.report?.autoRefreshIntervalSeconds)
   const [refreshInterval, setRefreshInterval] = useState(autoRefreshIntervalSeconds)
   const dispatch = useDispatch()
@@ -96,7 +105,7 @@ export function AutoRefreshSettingsModal ({ visible, onClose }) {
 
   return (
     <Modal
-      title='Auto Refresh Settings'
+      title={t('Auto Refresh Settings')}
       visible={visible}
       onCancel={handleCancel}
       bodyStyle={{ padding: '0px' }}
@@ -106,7 +115,7 @@ export function AutoRefreshSettingsModal ({ visible, onClose }) {
           <Button
             onClick={handleCancel}
           >
-            Close
+            {t('Close')}
           </Button>
         </div>
       }

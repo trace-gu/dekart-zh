@@ -29,6 +29,7 @@ import { reorderWidgets, serializeWidgetsConfig } from './widgetsConfig'
 import { WidgetSlotProvider } from './WidgetPanel'
 import { resolveFilterBindings } from '../dark/kepler-filter-bindings/index'
 import { keplerFieldType } from './compatibleWidgetFilter'
+import { t, useI18n } from '../i18n'
 import styles from './ReportWidgets.module.css'
 
 const noLayoutDrag = { attributes: {}, listeners: {} }
@@ -44,28 +45,28 @@ function publishDrag (event, config, onReorder) {
 
 // Keep pointer announcements complete because dnd-kit replaces, rather than merges, this contract.
 function announceDragStart ({ active }) {
-  return `Picked up ${active.data.current?.title || 'Widget'}`
+  return t('Picked up {title}', { title: active.data.current?.title || t('Widget') })
 }
 
 function announceDragOver ({ active, over }) {
-  const title = active.data.current?.title || 'Widget'
-  if (!over) return `${title} is no longer over a widget position`
+  const title = active.data.current?.title || t('Widget')
+  if (!over) return t('{title} is no longer over a widget position', { title })
   const position = (over.data.current?.sortable?.index ?? 0) + 1
-  return `${title} is over position ${position}`
+  return t('{title} is over position {position}', { title, position })
 }
 
 // Describe the final persisted position through dnd-kit's live region.
 function announceDrag (event) {
   // A drop outside the list leaves the saved order unchanged.
-  if (!event.over) return 'Widget was not moved'
-  const title = event.active.data.current?.title || 'Widget'
+  if (!event.over) return t('Widget was not moved')
+  const title = event.active.data.current?.title || t('Widget')
   const position = (event.over.data.current?.sortable?.index ?? 0) + 1
   const count = event.active.data.current?.count || 1
-  return `Moved ${title} to position ${position} of ${count}`
+  return t('Moved {title} to position {position} of {count}', { title, position, count })
 }
 
 function announceDragCancel ({ active }) {
-  return `Cancelled moving ${active.data.current?.title || 'widget'}`
+  return t('Cancelled moving {title}', { title: active.data.current?.title || t('widget') })
 }
 
 const pointerAnnouncements = {
@@ -153,9 +154,9 @@ function sameWidgetOrder (left, right) {
 function cancelKeyboardDrag (keyboardDrag, config, setKeyboardDrag, setKeyboardAnnouncement) {
   // Callers may cancel defensively after another path already cleared the move.
   if (!keyboardDrag) return
-  const title = config.widgets.find(widget => widget.id === keyboardDrag.id)?.title || 'widget'
+  const title = config.widgets.find(widget => widget.id === keyboardDrag.id)?.title || t('widget')
   setKeyboardDrag(null)
-  setKeyboardAnnouncement(`Cancelled moving ${title}`)
+  setKeyboardAnnouncement(t('Cancelled moving {title}', { title }))
 }
 
 function handleSortableKeyDown (
@@ -180,14 +181,14 @@ function handleSortableKeyDown (
     if (!keyboardDrag) {
       const order = config.widgets.map(item => item.id)
       setKeyboardDrag({ id: widget.id, order, originalOrder: order, configFingerprint })
-      setKeyboardAnnouncement(`Picked up ${widget.title}`)
+      setKeyboardAnnouncement(t('Picked up {title}', { title: widget.title }))
     } else if (keyboardDrag.id === widget.id) {
       const position = keyboardDrag.order.indexOf(widget.id) + 1
       if (!sameWidgetOrder(keyboardDrag.order, keyboardDrag.originalOrder)) {
         onReorder(configWithWidgetOrder(config, keyboardDrag.order))
       }
       setKeyboardDrag(null)
-      setKeyboardAnnouncement(`Moved ${widget.title} to position ${position} of ${keyboardDrag.order.length}`)
+      setKeyboardAnnouncement(t('Moved {title} to position {position} of {count}', { title: widget.title, position, count: keyboardDrag.order.length }))
     }
     return
   }
@@ -215,6 +216,7 @@ function SortableWidget ({
   dataReloadPending, calculating, config, configFingerprint, keyboardDrag, setKeyboardDrag,
   onReorder, setKeyboardAnnouncement
 }) {
+  const { t } = useI18n()
   const itemRef = useRef(null)
   const failed = useStore(store, state => Boolean(state.failedPanels[widget.id]))
   // Lock sorting and chart actions until the source and report calculation have settled.
@@ -238,7 +240,7 @@ function SortableWidget ({
     ? {
         attributes: {
           ...attributes,
-          'aria-label': `Move ${widget.title}`,
+          'aria-label': t('Move {title}', { title: widget.title }),
           'aria-pressed': keyboardDrag?.id === widget.id
         },
         listeners: keyboardDrag ? undefined : listeners
@@ -296,6 +298,7 @@ export default function WidgetContents ({
   store, snapshot, sources, loading, calculating, filterProjectionPending,
   dataReloadPending, placeholderCount, editing, configRevision, persistedConfig, onReorder
 }) {
+  const { t } = useI18n()
   const [builder, setBuilder] = useState(false)
   const [selectedSource, setSelectedSource] = useState('')
   const [filterErrors, setFilterErrors] = useState({})
@@ -343,13 +346,13 @@ export default function WidgetContents ({
       ))}
       {!snapshot && !builder && !settingsOpen && (
         <div className={styles.actions}>
-          <h2>Charts</h2>
+          <h2>{t('Charts')}</h2>
           <Button
-            aria-label='Add chart'
+            aria-label={t('Add chart')}
             disabled={!datasetId || calculating}
             onClick={() => { setSelectedSource(datasetId); setBuilder(true) }}
           >
-            <Plus size={15} />Add chart
+            <Plus size={15} />{t('Add chart')}
           </Button>
         </div>
       )}
@@ -395,8 +398,8 @@ export default function WidgetContents ({
         {!hasWidgets && loading && <ChartStubs count={placeholderCount} />}
         {!snapshot && !hasWidgets && !loading && datasetId && (
           <div className={styles.empty}>
-            <h3>Dashboard is empty</h3>
-            <p>Add a chart from any report dataset.</p>
+            <h3>{t('Dashboard is empty')}</h3>
+            <p>{t('Add a chart from any report dataset.')}</p>
           </div>
         )}
       </div>
@@ -404,8 +407,8 @@ export default function WidgetContents ({
       {builder && (
         <div className={styles.inlineBuilder} data-testid='inline-widget-builder'>
           <div className={styles.builderHeading}>
-            <h3>Add chart</h3>
-            <Button variant='ghost' onClick={() => setBuilder(false)}>Cancel</Button>
+            <h3>{t('Add chart')}</h3>
+            <Button variant='ghost' onClick={() => setBuilder(false)}>{t('Cancel')}</Button>
           </div>
           <SourceSelector
             id='widget-source'
@@ -425,7 +428,7 @@ export default function WidgetContents ({
               />
             </div>
           )}
-          {!builderReady && <p>Wait for a dataset to finish loading.</p>}
+          {!builderReady && <p>{t('Wait for a dataset to finish loading.')}</p>}
         </div>
       )}
     </>
@@ -434,9 +437,10 @@ export default function WidgetContents ({
 
 function SourceSelector ({ id, value, sources, onChange }) {
   // Unavailable datasets remain visible in the selector but cannot be chosen for a new chart.
+  const { t } = useI18n()
   return (
     <div className={styles.source}>
-      <label htmlFor={id}>Dataset</label>
+      <label htmlFor={id}>{t('Dataset')}</label>
       <select id={id} value={value} onChange={event => onChange(event.target.value)}>
         {sources.map(source => (
           <option
@@ -493,6 +497,7 @@ function WidgetBuilder ({ store, datasetId, canCreate, onCreated }) {
 
 // Only the report title/source binding is hosted here; chart controls remain upstream SQLRooms.
 function WidgetSettings ({ store, sources, calculating }) {
+  const { t } = useI18n()
   const selected = useStore(store, state => state.blockSettings.runtime.selectedBlock)
   const panel = useStore(store, state =>
     state.mosaicDashboard.config.dashboardsById[selected?.dashboardId]?.panels.find(panel => panel.id === selected?.id)
@@ -512,14 +517,14 @@ function WidgetSettings ({ store, sources, calculating }) {
         variant='ghost'
         onClick={() => store.getState().blockSettings.requestCloseSettingsPanel()}
       >
-        <ArrowLeft size={14} />Back to charts
+        <ArrowLeft size={14} />{t('Back to charts')}
       </Button>
       {locked
-        ? <p>Wait for this dataset and its charts to finish loading before editing.</p>
+        ? <p>{t('Wait for this dataset and its charts to finish loading before editing.')}</p>
         : (
           <>
             <div className={styles.source}>
-              <label htmlFor='widget-title'>Title</label>
+              <label htmlFor='widget-title'>{t('Title')}</label>
               <input
                 id='widget-title'
                 value={panel.title || ''}
@@ -527,7 +532,7 @@ function WidgetSettings ({ store, sources, calculating }) {
               />
             </div>
             <div className={styles.source}>
-              <span>Dataset</span>
+              <span>{t('Dataset')}</span>
               <strong data-testid='widget-settings-dataset'>{sourceLabel}</strong>
             </div>
             <div className={styles.chartSettings}>
@@ -560,6 +565,7 @@ function WidgetSettings ({ store, sources, calculating }) {
 
 // Show current matches; the filter controller applies changes after settings or fields change.
 function CrossFilterSetting ({ panel, dataId, datasets, sources, columns, onChange }) {
+  const { t } = useI18n()
   const field = panel.config.settings.field
   const tables = Object.values(datasets).map(table => ({
     dataId: table.id,
@@ -580,13 +586,13 @@ function CrossFilterSetting ({ panel, dataId, datasets, sources, columns, onChan
   })
   const type = tables.find(table => table.dataId === dataId)?.fields.find(item => item.name === field)?.type
   const label = id => sources.find(source => source.id === id)?.label || datasets[id]?.label || id
-  const skipped = result.skippedDataIds.length ? `Different type: ${result.skippedDataIds.map(label).join(', ')}` : ''
+  const skipped = result.skippedDataIds.length ? t('Different type: {datasets}', { datasets: result.skippedDataIds.map(label).join(', ') }) : ''
   const enabled = Boolean(panel.config.settings.crossFilter)
   const switchId = `cross-filter-${panel.id}`
   return (
     <div className={styles.crossFilter} data-testid='cross-filter-setting'>
       <div className={styles.crossFilterHeader}>
-        <label htmlFor={switchId}>Cross-filter</label>
+        <label htmlFor={switchId}>{t('Cross-filter')}</label>
         <ThemeProvider theme={theme}>
           <Switch
             id={switchId}
@@ -598,11 +604,11 @@ function CrossFilterSetting ({ panel, dataId, datasets, sources, columns, onChan
       </div>
       {enabled && field && type && (
         <div className={styles.crossFilterDetails}>
-          <span>Filter other datasets with this column</span>
+          <span>{t('Filter other datasets with this column')}</span>
           {result.matchingDataIds.length
             ? (
               <div className={styles.crossFilterMatches}>
-                <span>Matches:</span>
+                <span>{t('Matches:')}</span>
                 {result.matchingDataIds.map(id => (
                   <span className={styles.crossFilterDataset} key={id}>
                     <span
@@ -614,7 +620,7 @@ function CrossFilterSetting ({ panel, dataId, datasets, sources, columns, onChan
                 ))}
               </div>
               )
-            : <small>No matching datasets for {field} ({type})</small>}
+            : <small>{t('No matching datasets for {field} ({type})', { field, type })}</small>}
           {skipped && <small>{skipped}</small>}
         </div>
       )}

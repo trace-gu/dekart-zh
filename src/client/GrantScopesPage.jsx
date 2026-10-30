@@ -9,12 +9,14 @@ import { CloudTwoTone, FileProtectOutlined } from '@ant-design/icons'
 import { useEffect } from 'react'
 import { Redirect } from 'react-router-dom/cjs/react-router-dom'
 import { track } from './lib/tracking'
+import { useI18n } from './i18n'
 
 function getLastPage (visitedPages) {
   return visitedPages.current.filter(page => page !== '/grant-scopes').pop()
 }
 
 export default function GrantScopesPage ({ visitedPages }) {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const sensitiveScopesGranted = useSelector(state => state.user.sensitiveScopesGranted)
   const sensitiveScopesGrantedOnce = useSelector(state => state.user.sensitiveScopesGrantedOnce)
@@ -44,16 +46,16 @@ export default function GrantScopesPage ({ visitedPages }) {
   return (
     <div className={styles.grantScopesPage}>
       <Helmet>
-        <title>Grant Access to Google Cloud — Dekart</title>
+        <title>{t('Grant Access to Google Cloud — Dekart')}</title>
       </Helmet>
       <Header />
       <div className={styles.body}>
         <Result
           icon={<CloudTwoTone />}
-          title='Grant Access to Google Cloud'
+          title={t('Grant Access to Google Cloud')}
           subTitle={(
             <>
-              <p>Dekart uses BigQuery passthrough authentication and requests short-lived tokens stored only in your browser, ensuring no tokens or query results are stored on its backend.</p>
+              <p>{t('Dekart uses BigQuery passthrough authentication and requests short-lived tokens stored only in your browser, ensuring no tokens or query results are stored on its backend.')}</p>
             </>
           )}
           extra={(
@@ -62,14 +64,14 @@ export default function GrantScopesPage ({ visitedPages }) {
                 track('RequestSensitiveScopes')
                 dispatch(requestSensitiveScopes(getLastPage(visitedPages)))
               }}
-            >Continue to Google
+            >{t('Continue to Google')}
             </Button>
           )}
         />
         <p style={{
           fontSize: '1.2em'
         }}
-        ><FileProtectOutlined /> <a href='https://dekart.xyz/docs/usage/google-cloud-grant-scopes-faq/' target='_blank' rel='noreferrer'>Verified by Google’s Trust & Safety Team</a>
+        ><FileProtectOutlined /> <a href='https://dekart.xyz/docs/usage/google-cloud-grant-scopes-faq/' target='_blank' rel='noreferrer'>{t('Verified by Google’s Trust & Safety Team')}</a>
         </p>
 
       </div>

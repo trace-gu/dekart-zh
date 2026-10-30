@@ -13,8 +13,10 @@ import { track } from './lib/tracking'
 import AnalyticsModal from './AnalyticsModal'
 import classNames from 'classnames'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom'
+import { useI18n } from './i18n'
 
 function CopyLinkButton ({ ghost }) {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const playgroundReport = useSelector(state => state.report.isPlayground)
   const isPublic = useSelector(state => state.report.isPublic)
@@ -25,7 +27,7 @@ function CopyLinkButton ({ ghost }) {
       icon={<LinkOutlined />}
       ghost={ghost}
       disabled={!playgroundReport && !isPublic && !discoverable && !hasDirectAccess}
-      title='Copy link to report'
+      title={t('Copy link to report')}
       onClick={() => {
         track('CopyMapLink')
         const url = new URL(window.location.href)
@@ -33,23 +35,24 @@ function CopyLinkButton ({ ghost }) {
         if (url.pathname.endsWith('/source')) {
           url.pathname = url.pathname.slice(0, -7) // Remove '/source'
         }
-        dispatch(copyUrlToClipboard(url.toString(), 'Map URL copied to clipboard'))
+        dispatch(copyUrlToClipboard(url.toString(), t('Map URL copied to clipboard')))
       }}
-    >Copy Link
+    >{t('Copy Link')}
     </Button>
   )
 }
 
 function PublishSwitchDescription () {
+  const { t } = useI18n()
   const { isPublic, isPlayground } = useSelector(state => state.report)
   const isSelfHosted = useSelector(state => state.user.isSelfHosted)
   switch (true) {
     case isPlayground:
-      return <>{isSelfHosted ? 'Public link sharing settings are managed at workspace level.' : 'Playground maps are always public.'}</>
+      return <>{isSelfHosted ? t('Public link sharing settings are managed at workspace level.') : t('Playground maps are always public.')}</>
     case isPublic:
-      return <>This map is public. Anyone with the link can view.</>
+      return <>{t('This map is public. Anyone with the link can view.')}</>
     default:
-      return <>This map is private.</>
+      return <>{t('This map is private.')}</>
   }
 }
 
@@ -109,6 +112,7 @@ function TrackViewersSwitch ({ disabled }) {
 }
 
 function ViewAnalytics () {
+  const { t } = useI18n()
   const { canWrite, isPlayground, trackViewers } = useSelector(state => state.report)
   const authEnabled = useSelector(state => state.env.authEnabled)
   const dispatch = useDispatch()
@@ -127,13 +131,14 @@ function ViewAnalytics () {
           track('OpenAnalyticsModal')
         }} icon={<BarChartOutlined />} size='small' disabled={disabled}
       >
-        {disabled ? 'Enable tracking to see analytics' : 'View analytics'}
+        {disabled ? t('Enable tracking to see analytics') : t('View analytics')}
       </Button>
     </div>
   )
 }
 
 function DirectAccess () {
+  const { t } = useI18n()
   const { canWrite, isSharable, isPublic } = useSelector(state => state.report)
   const readOnly = useSelector(state => state.workspace.readOnly)
   const isSnowpark = useSelector(state => state.env.isSnowpark)
@@ -151,15 +156,15 @@ function DirectAccess () {
   }
   let disabledReason = ''
   if (readOnly) {
-    disabledReason = 'Workspace is read-only.'
+    disabledReason = t('Workspace is read-only.')
   } else if (!isSharable) {
-    disabledReason = 'Direct email sharing is unavailable for this map configuration.'
+    disabledReason = t('Direct email sharing is unavailable for this map configuration.')
   } else if (isPublic) {
-    disabledReason = 'Turn off public sharing to invite specific users by email.'
+    disabledReason = t('Turn off public sharing to invite specific users by email.')
   } else if (isDefaultWorkspace) {
-    disabledReason = 'Direct email sharing is unavailable in the default workspace.'
+    disabledReason = t('Direct email sharing is unavailable in the default workspace.')
   } else if (isSnowpark) {
-    disabledReason = 'Direct email sharing is unavailable in Snowpark mode.'
+    disabledReason = t('Direct email sharing is unavailable in Snowpark mode.')
   }
   const disabled = Boolean(disabledReason) || loading
 
@@ -168,9 +173,9 @@ function DirectAccess () {
       <div className={styles.boolStatus}>
         <div className={styles.boolStatusIcon}><UserAddOutlined /></div>
         <div className={styles.boolStatusLabel}>
-          <div className={styles.statusLabelTitle}>Invite people (view only)</div>
+          <div className={styles.statusLabelTitle}>{t('Invite people (view only)')}</div>
           <div className={styles.statusLabelDescription}>
-            Share this map with specific users by email address.
+            {t('Share this map with specific users by email address.')}
           </div>
         </div>
       </div>
@@ -178,7 +183,7 @@ function DirectAccess () {
         <Select
           mode='tags'
           style={{ width: '100%' }}
-          placeholder='Enter email addresses'
+          placeholder={t('Enter email addresses')}
           value={reportDirectAccessEmails}
           loading={loading}
           disabled={disabled}
@@ -200,14 +205,16 @@ function DirectAccess () {
 }
 
 function TrackViewersDescription () {
+  const { t } = useI18n()
   const { trackViewers } = useSelector(state => state.report)
   const isPublic = useSelector(state => state.report.isPublic)
   return trackViewers
-    ? <>{isPublic ? 'Login required for public reports.' : 'Viewer analytics are being tracked.'}</>
-    : <>Viewer analytics are not being tracked.</>
+    ? <>{isPublic ? t('Login required for public reports.') : t('Viewer analytics are being tracked.')}</>
+    : <>{t('Viewer analytics are not being tracked.')}</>
 }
 
 function TrackViewers () {
+  const { t } = useI18n()
   const { canWrite } = useSelector(state => state.report)
   const isSnowpark = useSelector(state => state.env.isSnowpark)
   const authEnabled = useSelector(state => state.env.authEnabled)
@@ -224,7 +231,7 @@ function TrackViewers () {
     <div className={styles.boolStatus}>
       <div className={styles.boolStatusIcon}><BarChartOutlined /></div>
       <div className={styles.boolStatusLabel}>
-        <div className={styles.statusLabelTitle}>Track viewer analytics</div>
+        <div className={styles.statusLabelTitle}>{t('Track viewer analytics')}</div>
         <div className={styles.statusLabelDescription}><TrackViewersDescription /></div>
         <ViewAnalytics />
       </div>
@@ -236,6 +243,7 @@ function TrackViewers () {
 }
 
 function PublicPermissions () {
+  const { t } = useI18n()
   const { isPublic, isPlayground, canWrite } = useSelector(state => state.report)
   const isSelfHosted = useSelector(state => state.user.isSelfHosted)
   const readOnly = useSelector(state => state.workspace.readOnly)
@@ -248,13 +256,13 @@ function PublicPermissions () {
   ) {
     return null
   }
-  const disabledReason = readOnly ? 'Workspace is read-only.' : isSelfHosted ? 'Public link sharing settings are unavailable in self-hosted mode.' : ''
+  const disabledReason = readOnly ? t('Workspace is read-only.') : isSelfHosted ? t('Public link sharing settings are unavailable in self-hosted mode.') : ''
   const disabled = Boolean(disabledReason) || isPlayground
   return (
     <div className={styles.boolStatus}>
       <div className={styles.boolStatusIcon}><GlobalOutlined /></div>
       <div className={styles.boolStatusLabel}>
-        <div className={styles.statusLabelTitle}>Share to anyone with the link</div>
+        <div className={styles.statusLabelTitle}>{t('Share to anyone with the link')}</div>
         <div className={styles.statusLabelDescription}><PublishSwitchDescription /></div>
       </div>
       <div className={styles.boolStatusControl}>
@@ -264,6 +272,7 @@ function PublicPermissions () {
   )
 }
 function AllowExportData () {
+  const { t } = useI18n()
   const { allowExport, canWrite, id } = useSelector(state => state.report)
   const authEnabled = useSelector(state => state.env.authEnabled)
   const readOnly = useSelector(state => state.workspace.readOnly)
@@ -279,9 +288,9 @@ function AllowExportData () {
     <div className={styles.boolStatus}>
       <div className={styles.boolStatusIcon}><DownloadOutlined /></div>
       <div className={styles.boolStatusLabel}>
-        <div className={styles.statusLabelTitle}>Allow exporting data</div>
+        <div className={styles.statusLabelTitle}>{t('Allow exporting data')}</div>
         <div className={styles.statusLabelDescription}>
-          When disabled, users can still view the data in the map, but cannot export CSV, view data table, change tooltips settings and view SQL.
+          {t('When disabled, users can still view the data in the map, but cannot export CSV, view data table, change tooltips settings and view SQL.')}
         </div>
       </div>
       <div className={styles.boolStatusControl}>
@@ -300,21 +309,22 @@ function AllowExportData () {
 }
 
 function WorkspacePermissionsDescription () {
+  const { t } = useI18n()
   const { isPlayground, discoverable, allowEdit, isPublic, hasDirectAccess } = useSelector(state => state.report)
   const isSelfHosted = useSelector(state => state.user.isSelfHosted)
   switch (true) {
     case isPlayground:
-      return <>{isSelfHosted ? 'Everyone with access to this workspace can view and edit this map.' : 'Workspace permissions are disabled in Playground Mode'}</>
+      return <>{isSelfHosted ? t('Everyone with access to this workspace can view and edit this map.') : t('Workspace permissions are disabled in Playground Mode')}</>
     case allowEdit:
-      return <>Everyone with access to this workspace can view and edit this map</>
+      return <>{t('Everyone with access to this workspace can view and edit this map')}</>
     case discoverable:
-      return <>Everyone with access to this workspace can discover and refresh this map</>
+      return <>{t('Everyone with access to this workspace can discover and refresh this map')}</>
     case isPublic:
-      return <>This map is public.</>
+      return <>{t('This map is public.')}</>
     case hasDirectAccess:
-      return <>Users with direct email access can still view this map regardless of workspace access.</>
+      return <>{t('Users with direct email access can still view this map regardless of workspace access.')}</>
     default:
-      return <>This map is private. Only the author can see it</>
+      return <>{t('This map is private. Only the author can see it')}</>
   }
 }
 
@@ -331,11 +341,12 @@ const workspacePermissionsLabels = {
 }
 
 function WorkspacePermissionsTitle () {
+  const { t } = useI18n()
   const { isPlayground, isSharable } = useSelector(state => state.report)
   if (isPlayground || !isSharable) {
-    return <div className={styles.statusLabelTitle}>Workspace Sharing</div>
+    return <div className={styles.statusLabelTitle}>{t('Workspace Sharing')}</div>
   }
-  return <div className={styles.statusLabelTitle}>Anyone in workspace</div>
+  return <div className={styles.statusLabelTitle}>{t('Anyone in workspace')}</div>
 }
 
 function permissionValueFromReportProps ({ discoverable, allowEdit }) {
@@ -363,6 +374,7 @@ function reportPropsFromPermissionValue (value) {
 }
 
 function WorkspacePermissionsSelect ({ disabled = false }) {
+  const { t } = useI18n()
   const { isPublic, id, isPlayground, isAuthor, allowEdit, discoverable } = useSelector(state => state.report)
   const dispatch = useDispatch()
   const value = isPlayground
@@ -389,14 +401,15 @@ function WorkspacePermissionsSelect ({ disabled = false }) {
         dispatch(setDiscoverable(id, discoverable, allowEdit))
       }}
       options={[
-        { value: workspacePermissions.CANNOT_VIEW, label: isPublic ? 'View' : workspacePermissionsLabels[workspacePermissions.CANNOT_VIEW], className: 'dekart-share-cannot-view' },
-        { value: workspacePermissions.VIEW, label: isPublic ? 'Refresh' : workspacePermissionsLabels[workspacePermissions.VIEW], className: 'dekart-share-view' },
-        { value: workspacePermissions.EDIT, label: workspacePermissionsLabels[workspacePermissions.EDIT] }
+        { value: workspacePermissions.CANNOT_VIEW, label: isPublic ? t('View') : t(workspacePermissionsLabels[workspacePermissions.CANNOT_VIEW]), className: 'dekart-share-cannot-view' },
+        { value: workspacePermissions.VIEW, label: isPublic ? t('Refresh') : t(workspacePermissionsLabels[workspacePermissions.VIEW]), className: 'dekart-share-view' },
+        { value: workspacePermissions.EDIT, label: t(workspacePermissionsLabels[workspacePermissions.EDIT]) }
       ]}
     />
   )
 }
 function WorkspacePermissions () {
+  const { t } = useI18n()
   const { canWrite, discoverable, isSharable } = useSelector(state => state.report)
   const readOnly = useSelector(state => state.workspace.readOnly)
   if (!canWrite && !discoverable) { // show only for discoverable workspace reports
@@ -404,9 +417,9 @@ function WorkspacePermissions () {
   }
   let disabledReason = ''
   if (readOnly) {
-    disabledReason = 'Workspace is read-only.'
+    disabledReason = t('Workspace is read-only.')
   } else if (!isSharable) {
-    disabledReason = 'Workspace-level sharing is unavailable for this map configuration.'
+    disabledReason = t('Workspace-level sharing is unavailable for this map configuration.')
   }
   const disabled = Boolean(disabledReason)
   return (
@@ -426,6 +439,7 @@ function WorkspacePermissions () {
 }
 
 function NonShareableWarning () {
+  const { t } = useI18n()
   const { isSharable } = useSelector(state => state.report)
   const datasource = useSelector(state => state.env.variables.DATASOURCE)
   const isPostgresDatasource = datasource === 'PG'
@@ -440,11 +454,11 @@ function NonShareableWarning () {
     <div className={classNames(styles.workspaceStatus, styles.nonSharableWarning)}>
       <div className={styles.workspaceStatusIcon}><WarningOutlined /></div>
       <div className={styles.workspaceStatusLabel}>
-        <div className={styles.statusLabelTitle}>Sharing options are limited</div>
+        <div className={styles.statusLabelTitle}>{t('Sharing options are limited')}</div>
         <div className={styles.statusLabelDescription}>
           {isPostgresDatasource
-            ? 'Postgres sharing is not supported yet.'
-            : 'Sharing is currently available for Snowflake, or BigQuery with a storage bucket or service account.'}
+            ? t('Postgres sharing is not supported yet.')
+            : t('Sharing is currently available for Snowflake, or BigQuery with a storage bucket or service account.')}
         </div>
       </div>
       {canManageConnections && (
@@ -454,7 +468,7 @@ function NonShareableWarning () {
               track('ManageConnectionsFromShareModal')
               history.push('/connections')
             }}
-          >Manage connections
+          >{t('Manage connections')}
           </Button>
         </div>
       )}
@@ -463,6 +477,7 @@ function NonShareableWarning () {
 }
 
 function AuthDisabledWarning () {
+  const { t } = useI18n()
   const authEnabled = useSelector(state => state.env.authEnabled)
   if (authEnabled) {
     return null
@@ -471,9 +486,9 @@ function AuthDisabledWarning () {
     <div className={classNames(styles.workspaceStatus, styles.nonSharableWarning)}>
       <div className={styles.workspaceStatusIcon}><WarningOutlined /></div>
       <div className={styles.workspaceStatusLabel}>
-        <div className={styles.statusLabelTitle}>You are not logged in</div>
+        <div className={styles.statusLabelTitle}>{t('You are not logged in')}</div>
         <div className={styles.statusLabelDescription}>
-          Sharing controls are shown as read-only because you are not logged in.
+          {t('Sharing controls are shown as read-only because you are not logged in.')}
         </div>
       </div>
     </div>
@@ -502,6 +517,7 @@ function ModalContent () {
 }
 
 export default function ShareButton () {
+  const { t } = useI18n()
   const [modalOpen, setModalOpen] = useState(false)
   const authEnabled = useSelector(state => state.env.authEnabled)
   const workspaceId = useSelector(state => state.user.stream?.workspaceId)
@@ -537,22 +553,22 @@ export default function ShareButton () {
         ghost={!authEnabled}
         type={authEnabled ? 'primary' : 'default'}
         id='dekart-share-report'
-        title='Map sharing options'
+        title={t('Map sharing options')}
         onClick={() => {
           setModalOpen(true)
           track('OpenShareModal')
         }}
-      >Share
+      >{t('Share')}
       </Button>
       <Modal
-        title='Share Map'
+        title={t('Share Map')}
         visible={modalOpen}
         onOk={() => setModalOpen(false)}
         onCancel={() => setModalOpen(false)}
         bodyStyle={{ padding: '0px' }}
         footer={
           <div className={styles.modalFooter}>
-            {workspaceId && !isSnowpark ? <Button icon='+ ' type='primary' href='/workspace/members' disabled={readOnly} title={readOnly ? 'Workspace is read-only' : undefined} onClick={() => track('AddUsersToWorkspaceFromShareModal')}>Add users to workspace</Button> : null}
+            {workspaceId && !isSnowpark ? <Button icon='+ ' type='primary' href='/workspace/members' disabled={readOnly} title={readOnly ? t('Workspace is read-only') : undefined} onClick={() => track('AddUsersToWorkspaceFromShareModal')}>{t('Add users to workspace')}</Button> : null}
             <div className={styles.modalFooterSpacer} />
             <CopyLinkButton />
             <Button
@@ -561,7 +577,7 @@ export default function ShareButton () {
                 setModalOpen(false)
               }}
             >
-              Done
+              {t('Done')}
             </Button>
           </div>
         }

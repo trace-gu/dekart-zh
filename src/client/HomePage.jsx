@@ -26,9 +26,11 @@ import CreateConnection from './CreateConnection'
 import { Loading } from './Loading'
 import classnames from 'classnames'
 import { UNKNOWN_EMAIL } from './lib/constants'
+import { useI18n } from './i18n'
 
 function ArchiveReportButton ({ report }) {
   const dispatch = useDispatch()
+  const { t } = useI18n()
   const [disabled, setDisabled] = useState(false)
   const disableArchivePublic = report.isPublic && !report.archived
   return (
@@ -40,20 +42,21 @@ function ArchiveReportButton ({ report }) {
       type='text'
       size='small'
       disabled={disabled || disableArchivePublic}
-      title={disableArchivePublic ? 'Cannot archive public report. Unpublish it first.' : (report.archived ? 'Restore' : 'Archive')}
+      title={disableArchivePublic ? t('Cannot archive public report. Unpublish it first.') : (report.archived ? t('Restore') : t('Archive'))}
       onClick={(e) => {
         e.stopPropagation()
         dispatch(archiveReport(report.id, !report.archived))
         setDisabled(true)
       }}
     >
-      {report.archived ? 'Restore' : 'Archive'}
+      {report.archived ? t('Restore') : t('Archive')}
     </Button>
   )
 }
 
 function ConnectionCard ({ connection }) {
   const dispatch = useDispatch()
+  const { t, locale } = useI18n()
   const updatedDate = new Date(connection.updatedAt * 1000)
   const openConnection = () => {
     track('OpenConnectionSettings', { connectionId: connection.id, connectionType: connection.connectionType })
@@ -69,10 +72,10 @@ function ConnectionCard ({ connection }) {
       </div>
       <div className={styles.connectionCardTitle}>{connection.connectionName}</div>
       <div className={styles.connectionCardMetaGrid}>
-        <div className={styles.connectionCardMetaLabel}>Owner</div>
+        <div className={styles.connectionCardMetaLabel}>{t('Owner')}</div>
         <div className={styles.connectionCardMetaValue}>{connection.authorEmail}</div>
-        <div className={styles.connectionCardMetaLabel}>Updated</div>
-        <div className={styles.connectionCardMetaValue}>{getRelativeTime(updatedDate)}</div>
+        <div className={styles.connectionCardMetaLabel}>{t('Updated')}</div>
+        <div className={styles.connectionCardMetaValue}>{getRelativeTime(updatedDate, locale)}</div>
       </div>
       <div className={styles.connectionCardDivider} />
       <div className={styles.connectionCardFooter}>
@@ -81,7 +84,7 @@ function ConnectionCard ({ connection }) {
             ? (
               <>
                 <CheckOutlined />
-                <span>Used by default</span>
+                <span>{t('Used by default')}</span>
               </>
               )
             : (
@@ -93,7 +96,7 @@ function ConnectionCard ({ connection }) {
                   track('SetDefaultConnection', { connectionId: connection.id })
                   dispatch(setDefaultConnection(connection.id))
                 }}
-              >Set default
+              >{t('Set default')}
               </Button>
               )}
         </div>
@@ -104,7 +107,7 @@ function ConnectionCard ({ connection }) {
             event.stopPropagation()
             openConnection()
           }}
-        >Edit
+        >{t('Edit')}
         </Button>
       </div>
     </div>
@@ -112,6 +115,7 @@ function ConnectionCard ({ connection }) {
 }
 
 function FirstReportOnboarding () {
+  const { t } = useI18n()
   const isPlayground = useSelector(state => state.user.isPlayground)
   const dispatch = useDispatch()
   const isViewer = useSelector(state => state.user.isViewer)
@@ -125,35 +129,35 @@ function FirstReportOnboarding () {
     <>
       <Result
         status='success'
-        title='You are all set'
-        subTitle='Everything is ready to create you first map.'
+        title={t('You are all set')}
+        subTitle={t('Everything is ready to create you first map.')}
         extra={(
           <>
             <Button
-              icon={<PlusOutlined />} disabled={createDisabled} title={readOnly ? 'Workspace is read-only' : undefined} type='primary' id='dekart-create-report' onClick={
+              icon={<PlusOutlined />} disabled={createDisabled} title={readOnly ? t('Workspace is read-only') : undefined} type='primary' id='dekart-create-report' onClick={
                 () => {
                   track('CreateMap')
                   dispatch(createReport())
                 }
               }
-            >Create map
+            >{t('Create map')}
             </Button>
             {sqlConnectionList.length === 0 && (
               <Button
                 disabled={!isAdmin || isViewer}
-                title={isAdmin ? 'Connect database' : 'Only admin can create new connection'}
+                title={isAdmin ? t('Connect database') : t('Only admin can create new connection')}
                 onClick={() => {
                   track('ConnectDatabaseFromFirstReportOnboarding')
                   history.push('/connections')
                 }}
               >
-                Connect database
+                {t('Connect database')}
               </Button>
             )}
             <div className={styles.stepBySetLink}>
-              <a href='https://github.com/dekart-xyz/geosql#install-claudecodex' target='_blank' rel='noreferrer'>Install Claude skill</a>
+              <a href='https://github.com/dekart-xyz/geosql#install-claudecodex' target='_blank' rel='noreferrer'>{t('Install Claude skill')}</a>
             </div>
-            <If condition={isPlayground && !isSelfHosted}><div className={styles.stepBySetLink}><a target='_blank' href='https://dekart.xyz/docs/about/playground/#quick-start' rel='noreferrer'>Check step-by-step guide</a></div></If>
+            <If condition={isPlayground && !isSelfHosted}><div className={styles.stepBySetLink}><a target='_blank' href='https://dekart.xyz/docs/about/playground/#quick-start' rel='noreferrer'>{t('Check step-by-step guide')}</a></div></If>
           </>
         )}
       />
@@ -163,39 +167,40 @@ function FirstReportOnboarding () {
 }
 
 function FirstSetupOnboarding () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const history = useHistory()
   const isAdmin = useSelector(state => state.user.isAdmin)
   const isViewer = useSelector(state => state.user.isViewer)
   const readOnly = useSelector(state => state.workspace.readOnly)
   const allowFileUpload = useSelector(state => state.env.variables.ALLOW_FILE_UPLOAD)
-  const fileUploadDisabledNote = allowFileUpload ? '' : 'File upload is disabled in configuration'
-  const createDisabledTitle = readOnly ? 'Workspace is read-only' : fileUploadDisabledNote
+  const fileUploadDisabledNote = allowFileUpload ? '' : t('File upload is disabled in configuration')
+  const createDisabledTitle = readOnly ? t('Workspace is read-only') : fileUploadDisabledNote
 
   return (
     <Result
       icon={<span className={styles.rocketIcon} />}
-      title='Ready to connect'
-      subTitle='Create your database connection or start by uploading a file.'
+      title={t('Ready to connect')}
+      subTitle={t('Create your database connection or start by uploading a file.')}
       extra={(
         <div className={styles.firstSetupActions}>
           <Button
             id='dekart-new-connection-onboarding'
             type='primary'
             disabled={!isAdmin || readOnly}
-            title={readOnly ? 'Workspace is read-only' : isAdmin ? 'Create new connection' : 'Only admin can create new connection'}
+            title={readOnly ? t('Workspace is read-only') : isAdmin ? t('Create new connection') : t('Only admin can create new connection')}
             onClick={() => history.push('/connections')}
-          >New connection
+          >{t('New connection')}
           </Button>
           <Button
             id='dekart-use-file-upload'
             disabled={isViewer || !allowFileUpload || readOnly}
-            title={isViewer ? 'Viewers cannot create maps' : createDisabledTitle}
+            title={isViewer ? t('Viewers cannot create maps') : createDisabledTitle}
             onClick={() => {
               track('CreateMap')
               dispatch(createReport())
             }}
-          >Use file upload
+          >{t('Use file upload')}
           </Button>
         </div>
       )}
@@ -206,6 +211,7 @@ function FirstSetupOnboarding () {
 function ReportsHeader (
   { reportFilter, archived, setArchived }
 ) {
+  const { t } = useI18n()
   const connectionList = useSelector(state => state.connection.list)
   const reportsList = useSelector(state => state.reportsList)
   const userDefinedConnection = useSelector(state => state.connection.userDefined)
@@ -241,10 +247,10 @@ function ReportsHeader (
                 }
               }}
             >
-              <Radio.Button value='my'>My Maps</Radio.Button>
-              <Radio.Button value='discoverable'>Shared Maps</Radio.Button>
+              <Radio.Button value='my'>{t('My Maps')}</Radio.Button>
+              <Radio.Button value='discoverable'>{t('Shared Maps')}</Radio.Button>
               {
-                connectionList && userDefinedConnection ? <Radio.Button value='connections'>Connections</Radio.Button> : null
+                connectionList && userDefinedConnection ? <Radio.Button value='connections'>{t('Connections')}</Radio.Button> : null
               }
             </Radio.Group>
 
@@ -262,8 +268,8 @@ function ReportsHeader (
                 }
               }}
             >
-              <Radio.Button value='my'>Maps</Radio.Button>
-              <Radio.Button value='discoverable' disabled>Shared Maps</Radio.Button>
+              <Radio.Button value='my'>{t('Maps')}</Radio.Button>
+              <Radio.Button value='discoverable' disabled>{t('Shared Maps')}</Radio.Button>
             </Radio.Group>
             )
       }
@@ -275,12 +281,12 @@ function ReportsHeader (
                 id='dekart-new-connection-connections'
                 disabled={!isAdmin || readOnly}
                 type='primary'
-                title={readOnly ? 'Workspace is read-only' : isAdmin ? 'Create new connection' : 'Only admin can create new connection'}
+                title={readOnly ? t('Workspace is read-only') : isAdmin ? t('Create new connection') : t('Only admin can create new connection')}
                 onClick={() => {
                   track('NewConnectionButton')
                   dispatch(newConnectionScreen(true))
                 }}
-              >New Connection
+              >{t('New Connection')}
               </Button>
               )
             : (
@@ -289,18 +295,18 @@ function ReportsHeader (
                   reportFilter === 'my'
                     ? (
                       <div className={styles.archivedSwitch}>
-                        <div className={styles.archivedSwitchLabel}>Archived</div>
+                        <div className={styles.archivedSwitchLabel}>{t('Archived')}</div>
                         <Switch id='dekart-archived-switch' checked={archived} disabled={reportsList.archived.length === 0} onChange={(checked) => setArchived(checked)} />
                       </div>
                       )
                     : null
                 }
                 <Button
-                  id='dekart-create-report' type='primary' disabled={isViewer || readOnly} title={readOnly ? 'Workspace is read-only' : undefined} onClick={() => {
+                  id='dekart-create-report' type='primary' disabled={isViewer || readOnly} title={readOnly ? t('Workspace is read-only') : undefined} onClick={() => {
                     track('NewMap')
                     dispatch(createReport())
                   }}
-                >New Map
+                >{t('New Map')}
                 </Button>
               </>
               )
@@ -351,6 +357,7 @@ function filterDataSource (dataSource, searchQuery, reportFilter) {
 }
 
 function MapCard ({ report, reportFilter, archived, authEnabled }) {
+  const { t, locale, formatDateTime } = useI18n()
   const history = useHistory()
   const privacy = getPrivacyStatus(report)
   const modifiedDate = new Date(report.updatedAt * 1000)
@@ -408,7 +415,7 @@ function MapCard ({ report, reportFilter, archived, authEnabled }) {
       <div className={styles.mapPreview}>
         <div className={classnames(styles.privacyBadge, styles.privacyBadgeOverlay, privacy.className)}>
           {privacy.icon}
-          <span>{privacy.label}</span>
+          <span>{t(privacy.label)}</span>
         </div>
         <PreviewConnectionIcons report={report} />
         <div className={styles.previewCenterCoordinates}>
@@ -437,22 +444,22 @@ function MapCard ({ report, reportFilter, archived, authEnabled }) {
       <div className={styles.mapCardContent}>
         <h3
           className={classnames(styles.mapTitle, { [styles.mapTitleUntitled]: !report.title || report.title === 'Untitled' })}
-          title={(!report.title || report.title === 'Untitled') ? 'Click to rename this map' : undefined}
+          title={(!report.title || report.title === 'Untitled') ? t('Click to rename this map') : undefined}
         >
-          {report.title || 'Untitled'}
+          {report.title || t('Untitled')}
         </h3>
         <div className={styles.mapMeta}>
           <div className={styles.mapMetaGrid}>
-            <div className={styles.mapMetaLabel}>Owner</div>
+            <div className={styles.mapMetaLabel}>{t('Owner')}</div>
             <div className={styles.mapMetaValue}>
-              {(report.authorEmail && report.authorEmail !== UNKNOWN_EMAIL) ? report.authorEmail : 'Unknown'}
+              {(report.authorEmail && report.authorEmail !== UNKNOWN_EMAIL) ? report.authorEmail : t('Unknown')}
             </div>
-            <div className={styles.mapMetaLabel}>Updated</div>
+            <div className={styles.mapMetaLabel}>{t('Updated')}</div>
             <div
               className={styles.mapMetaValue}
-              title={`${modifiedDate.toLocaleString()} (${modifiedDate.toUTCString()})`}
+              title={`${formatDateTime(modifiedDate)} (${modifiedDate.toUTCString()})`}
             >
-              {getRelativeTime(modifiedDate)}
+              {getRelativeTime(modifiedDate, locale)}
             </div>
           </div>
           {showFooterActions
@@ -469,8 +476,8 @@ function MapCard ({ report, reportFilter, archived, authEnabled }) {
                         icon={<EditOutlined />}
                         onClick={handleEdit}
                         className={styles.mapActionButton}
-                        title='Edit'
-                      >Edit
+                        title={t('Edit')}
+                      >{t('Edit')}
                       </Button>
                       )
                     : null}
@@ -485,6 +492,7 @@ function MapCard ({ report, reportFilter, archived, authEnabled }) {
 }
 
 function Reports ({ createReportButton, reportFilter }) {
+  const { t } = useI18n()
   const [archived, setArchived] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const reportsList = useSelector(state => state.reportsList)
@@ -571,7 +579,7 @@ function Reports ({ createReportButton, reportFilter }) {
         />
         <div className={styles.searchBar}>
           <Input
-            placeholder='Search maps...'
+            placeholder={t('Search maps...')}
             prefix={<SearchOutlined />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -596,7 +604,7 @@ function Reports ({ createReportButton, reportFilter }) {
           : searchQuery.trim()
             ? (
               <div className={styles.noResults}>
-                No results found
+                {t('No results found')}
               </div>
               )
             : reportFilter === 'discoverable'
@@ -608,13 +616,14 @@ function Reports ({ createReportButton, reportFilter }) {
 }
 
 function OnboardingMyReports () {
+  const { t } = useI18n()
   return (
     <Onboarding
-      icon={<FileSearchOutlined />} title='View, manage, and organize the maps that you have created ' steps={
+      icon={<FileSearchOutlined />} title={t('View, manage, and organize the maps that you have created ')} steps={
         <ol>
-          <li>Click on the "New Map" button in the top right corner</li>
-          <li>Save the map and give it a relevant name.</li>
-          <li>Your map will appear here.</li>
+          <li>{t('Click on the "New Map" button in the top right corner')}</li>
+          <li>{t('Save the map and give it a relevant name.')}</li>
+          <li>{t('Your map will appear here.')}</li>
         </ol>
       }
     />
@@ -622,15 +631,16 @@ function OnboardingMyReports () {
 }
 
 function OnboardingDiscoverableReports () {
+  const { t } = useI18n()
   return (
     <Onboarding
       icon={<UsergroupAddOutlined />}
-      title='Shared maps helps your others to discover and reuse your reports'
+      title={t('Shared maps helps your others to discover and reuse your reports')}
       steps={
         <ol>
-          <li>Open the map that you want to share and click on the "Share" button on the top right corner of the page</li>
-          <li>In a pop-up window select the option to make the map discoverable.</li>
-          <li>Shared maps will appear in this tab for all users.</li>
+          <li>{t('Open the map that you want to share and click on the "Share" button on the top right corner of the page')}</li>
+          <li>{t('In a pop-up window select the option to make the map discoverable.')}</li>
+          <li>{t('Shared maps will appear in this tab for all users.')}</li>
         </ol>
       }
     />
@@ -650,6 +660,7 @@ function getPageTitle (reportFilter) {
 }
 
 export default function HomePage ({ reportFilter }) {
+  const { t } = useI18n()
   const reportsList = useSelector(state => state.reportsList)
   const isPlayground = useSelector(state => state.user.isPlayground)
   const connectionsLoaded = useSelector(state => state.connection.listLoaded)
@@ -668,7 +679,7 @@ export default function HomePage ({ reportFilter }) {
   return (
     <div className={styles.homePage}>
       <Helmet>
-        <title>{getPageTitle(reportFilter)} — Dekart</title>
+        <title>{`${t(getPageTitle(reportFilter))} — Dekart`}</title>
       </Helmet>
       <Header />
       <div className={styles.body}>

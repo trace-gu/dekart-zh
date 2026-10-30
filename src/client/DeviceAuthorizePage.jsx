@@ -12,6 +12,7 @@ import { track } from './lib/tracking'
 import { Header } from './Header'
 import { Loading } from './Loading'
 import styles from './DeviceAuthorizePage.module.css'
+import { useI18n } from './i18n'
 
 const pageState = {
   invalid: {
@@ -68,25 +69,26 @@ function DeviceAuthorizeLayout ({ title, children }) {
 
 // WorkspaceRequiredPanel mirrors workspace onboarding visual hierarchy for device flow.
 function WorkspaceRequiredPanel ({ onCreate, onJoin }) {
+  const { t } = useI18n()
   return (
     <Result
       status='success'
       icon={<span className={styles.rocketIcon} />}
-      title='Finish setup for CLI access'
-      subTitle='To complete giskill login, create or join a workspace first.'
+      title={t('Finish setup for CLI access')}
+      subTitle={t('To complete giskill login, create or join a workspace first.')}
       extra={(
         <>
           <Button id='dekart-device-create-workspace' type='primary' onClick={onCreate}>
-            Create Workspace
+            {t('Create Workspace')}
           </Button>
           <Button id='dekart-device-join-workspace' onClick={onJoin}>
-            Join Existing Workspace
+            {t('Join Existing Workspace')}
           </Button>
           <div className={styles.notSure}>
             <div className={styles.notSureItems}>
-              <div>→ Step 1: create or join a workspace</div>
-              <div>→ Step 2: return to this page</div>
-              <div>→ Step 3: click Authorize to finish</div>
+              <div>{t('→ Step 1: create or join a workspace')}</div>
+              <div>{t('→ Step 2: return to this page')}</div>
+              <div>{t('→ Step 3: click Authorize to finish')}</div>
             </div>
           </div>
         </>
@@ -96,6 +98,7 @@ function WorkspaceRequiredPanel ({ onCreate, onJoin }) {
 }
 
 export default function DeviceAuthorizePage () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const history = useHistory()
   const location = useLocation()
@@ -157,24 +160,24 @@ export default function DeviceAuthorizePage () {
 
   if (authorized) {
     return (
-      <DeviceAuthorizeLayout title='Device authorized — Dekart'>
+      <DeviceAuthorizeLayout title={t('Device authorized — Dekart')}>
         <Result
           status={pageState.authorized.status}
-          title={pageState.authorized.title}
-          subTitle={pageState.authorized.subtitle}
+          title={t(pageState.authorized.title)}
+          subTitle={t(pageState.authorized.subtitle)}
           extra={(
             <>
               {connectionListLoaded && sqlConnectionList.length === 0 && (
                 <Button
                   type='primary'
                   disabled={!isAdmin}
-                  title={isAdmin ? 'Connect database' : 'Only admin can create new connection'}
+                  title={isAdmin ? t('Connect database') : t('Only admin can create new connection')}
                   onClick={() => {
                     track('DeviceAuthorizedCreateConnection')
                     history.push('/connections')
                   }}
                 >
-                  Connect database
+                  {t('Connect database')}
                 </Button>
               )}
               <Button
@@ -183,10 +186,10 @@ export default function DeviceAuthorizePage () {
                   history.push('/workspace/tokens')
                 }}
               >
-                Manage tokens
+                {t('Manage tokens')}
               </Button>
               <div className={styles.installSkillLink}>
-                <a href='https://github.com/dekart-xyz/geosql#install-claudecodex' target='_blank' rel='noreferrer'>Install Claude skill</a>
+                <a href='https://github.com/dekart-xyz/geosql#install-claudecodex' target='_blank' rel='noreferrer'>{t('Install Claude skill')}</a>
               </div>
             </>
           )}
@@ -197,15 +200,15 @@ export default function DeviceAuthorizePage () {
 
   if (!deviceID) {
     return (
-      <DeviceAuthorizeLayout title='Invalid device request — Dekart'>
-        <Result status={pageState.invalid.status} title={pageState.invalid.title} subTitle={pageState.invalid.subtitle} />
+      <DeviceAuthorizeLayout title={t('Invalid device request — Dekart')}>
+        <Result status={pageState.invalid.status} title={t(pageState.invalid.title)} subTitle={t(pageState.invalid.subtitle)} />
       </DeviceAuthorizeLayout>
     )
   }
 
   if (!envLoaded || !userStream) {
     return (
-      <DeviceAuthorizeLayout title='Authorize device — Dekart'>
+      <DeviceAuthorizeLayout title={t('Authorize device — Dekart')}>
         <Loading />
       </DeviceAuthorizeLayout>
     )
@@ -213,7 +216,7 @@ export default function DeviceAuthorizePage () {
 
   if (isAnonymous && googleOAuthEnabled) {
     return (
-      <DeviceAuthorizeLayout title='Authorize device — Dekart'>
+      <DeviceAuthorizeLayout title={t('Authorize device — Dekart')}>
         <Loading />
       </DeviceAuthorizeLayout>
     )
@@ -221,7 +224,7 @@ export default function DeviceAuthorizePage () {
 
   if (!hasWorkspaceContext) {
     return (
-      <DeviceAuthorizeLayout title='Workspace required — Dekart'>
+      <DeviceAuthorizeLayout title={t('Workspace required — Dekart')}>
         <WorkspaceRequiredPanel
           onCreate={() => openWorkspaceStep('create')}
           onJoin={() => openWorkspaceStep('join')}
@@ -231,20 +234,20 @@ export default function DeviceAuthorizePage () {
   }
 
   return (
-    <DeviceAuthorizeLayout title='Authorize device — Dekart'>
+    <DeviceAuthorizeLayout title={t('Authorize device — Dekart')}>
       <Result
         status={pageState.approve.status}
-        title={pageState.approve.title}
+        title={t(pageState.approve.title)}
         subTitle={(
           <div>
-            <div>{pageState.approve.subtitle}</div>
-            <div className={styles.deviceId}>Device ID: {deviceID}</div>
-            {errorMessage ? <div className={styles.error}>{errorMessage}</div> : null}
+            <div>{t(pageState.approve.subtitle)}</div>
+            <div className={styles.deviceId}>{t('Device ID: {id}', { id: deviceID })}</div>
+            {errorMessage ? <div className={styles.error}>{t(errorMessage)}</div> : null}
           </div>
         )}
         extra={(
           <Button type='primary' loading={authorizing} onClick={authorize}>
-            {pageState.approve.actionLabel}
+            {t(pageState.approve.actionLabel)}
           </Button>
         )}
       />

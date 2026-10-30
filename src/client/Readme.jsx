@@ -14,6 +14,7 @@ import 'ace-builds/src-noconflict/ext-language_tools'
 import 'ace-builds/src-noconflict/keybinding-vscode'
 import 'ace-builds/src-noconflict/ext-beautify'
 import 'ace-builds/src-noconflict/ext-emmet'
+import { useI18n } from './i18n'
 
 // Keep horizontal table scrolling outside the semantic table so rows retain their full height.
 function MarkdownTable ({ children }) {
@@ -23,6 +24,7 @@ function MarkdownTable ({ children }) {
 const markdownComponents = { table: MarkdownTable }
 
 export default function Readme ({ readme }) {
+  const { t } = useI18n()
   const { canWrite } = useSelector(state => state.report)
   const readOnly = useSelector(state => state.workspace.readOnly)
   const { edit } = useSelector(state => state.reportStatus)
@@ -39,7 +41,7 @@ export default function Readme ({ readme }) {
             track('ToggleReadmePreview', { showPreview: !showPreview })
             dispatch(setPreview(!showPreview))
           }}
-        >{showPreview ? (canWrite && edit && !readOnly ? 'Edit' : 'Markdown') : (canWrite && edit && !readOnly ? 'Preview' : 'View')}
+        >{showPreview ? (canWrite && edit && !readOnly ? t('Edit') : 'Markdown') : (canWrite && edit && !readOnly ? t('Preview') : t('View'))}
         </Button>
       </div>
       <AutoSizer>

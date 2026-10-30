@@ -11,6 +11,7 @@ import { useCountPlotCategoryCount } from '@sqlrooms/mosaic/dist/charts/chart-ty
 import styles from './CategoryChart.module.css'
 import usePaintedRetention from './usePaintedRetention'
 import { compatibleWidgetFilter } from './compatibleWidgetFilter'
+import { useI18n } from '../i18n'
 
 const sortOptions = {
   'value-desc': 'Value descending',
@@ -23,28 +24,29 @@ const sortOptions = {
 // left-padding controls are not part of Dekart's persisted contract.
 export function CategorySettings () {
   const { config, onChangeConfig } = useMosaicChartSettingsContext('count-plot')
+  const { t } = useI18n()
   const sort = config.settings.sort || 'value-desc'
   return (
     <div className={styles.settings}>
-      <Field label='Field' required>
+      <Field label={t('Field')} required>
         <ColumnSelector.Categorical
           value={config.settings.field}
           onChange={value => onChangeConfig('field', value)}
         />
       </Field>
-      <Field label='Sort'>
+      <Field label={t('Sort')}>
         <Combobox value={sort} onChange={value => onChangeConfig('sort', value)}>
-          <Combobox.Trigger ariaLabel='Sort'>
-            <span>{sortOptions[sort]}</span>
+          <Combobox.Trigger ariaLabel={t('Sort')}>
+            <span>{t(sortOptions[sort])}</span>
           </Combobox.Trigger>
           <Combobox.Content>
             {Object.entries(sortOptions).map(([value, label]) => (
-              <Combobox.Item key={value} value={value}>{label}</Combobox.Item>
+              <Combobox.Item key={value} value={value}>{t(label)}</Combobox.Item>
             ))}
           </Combobox.Content>
         </Combobox>
       </Field>
-      <Field label='Max bars'>
+      <Field label={t('Max bars')}>
         <Input
           type='number'
           min={1}
@@ -60,11 +62,12 @@ export function CategorySettings () {
 // Retain the upstream query, settings and selection clients, with a readable sidebar layout.
 export default function CategoryChart (props) {
   const { config, dataTable, runtimeIssueReporter } = props
+  const { t } = useI18n()
   const missingField = !dataTable.columns.some(column => column.name === config.settings.field)
   useEffect(() => {
     // Preflight missing fields before any Mosaic query client can affect sibling charts.
-    if (missingField) runtimeIssueReporter.reportIssue({ message: 'Chart failed' })
-  }, [missingField, runtimeIssueReporter])
+    if (missingField) runtimeIssueReporter.reportIssue({ message: t('Chart failed') })
+  }, [missingField, runtimeIssueReporter, t])
   // The Dekart panel wrapper owns the shared failure presentation.
   if (missingField) return null
   return <CategoryChartBody {...props} />
@@ -75,6 +78,7 @@ function CategoryChartBody ({
   config, coordinator, dataTable, table, selectionName,
   runtimeIssueContext, runtimeIssueReporter, ...chartProps
 }) {
+  const { t } = useI18n()
   const { layer, scaleType, colorDomain, colorRange } = useSelector(state => {
     // Use the visible map layer for this field when more than one layer matches.
     const matches = (state.keplerGl.kepler?.visState.layers || []).filter(layer =>
@@ -220,8 +224,8 @@ function CategoryChartBody ({
   // Show the shared chart error if the bars cannot be built or their count never arrives.
   const failed = !result || (!categories.isLoading && categories.count === undefined)
   useEffect(() => {
-    if (failed) runtimeIssueReporter.reportIssue({ message: 'Chart failed' })
-  }, [failed, runtimeIssueReporter])
+    if (failed) runtimeIssueReporter.reportIssue({ message: t('Chart failed') })
+  }, [failed, runtimeIssueReporter, t])
   if (!result) return null
   const count = Math.min(categories.count ?? 0, config.settings.maxBars ?? 20)
   // Wait for the first count before drawing; drawing bars earlier can fail.
@@ -229,7 +233,7 @@ function CategoryChartBody ({
   const ready = categories.count !== undefined
   return (
     <div className={styles.category}>
-      <span className={styles.count} data-testid='category-count'>{categories.count} values</span>
+      <span className={styles.count} data-testid='category-count'>{t('{count} values', { count: categories.count })}</span>
       <div
         className={styles.scroll}
         style={{ maxHeight: expanded ? undefined : 110, overflowY: expanded ? 'auto' : 'hidden' }}
@@ -252,7 +256,7 @@ function CategoryChartBody ({
       </div>
       {count > 3 && (
         <button className={styles.more} onClick={() => setExpanded(!expanded)}>
-          {expanded ? 'Show less' : `Show ${count - 3} more`}
+          {expanded ? t('Show less') : t('Show {count} more', { count: count - 3 })}
         </button>
       )}
     </div>

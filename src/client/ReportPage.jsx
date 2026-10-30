@@ -24,6 +24,8 @@ import getDatasetName from './lib/getDatasetName'
 import { createDataset, openDatasetSettingsModal, removeDataset, setActiveDataset } from './actions/dataset'
 import { closeReport, markKeplerPanelInteracted, openReport, reportTitleChange, reportWillOpen, toggleReportEdit } from './actions/report'
 import { setError } from './actions/message'
+import { setLocale as setKeplerLocale } from '@kepler.gl/actions/dist/ui-state-actions'
+import { keplerLocaleFor, useI18n } from './i18n'
 import Tooltip from 'antd/es/tooltip'
 import prettyBites from 'pretty-bytes'
 import { getDatasourceMeta } from './lib/datasource'
@@ -54,13 +56,14 @@ function MapContainerWithRenderFactory (...dependencies) {
   const MapContainer = MapContainerFactory(...dependencies)
   return function MapContainerWithRender (props) {
     const dispatch = useDispatch()
+    const { t } = useI18n()
     const callbacks = props.deckRenderCallbacks
     const uiStateActions = {
       ...props.uiStateActions,
       addNotification: notification => {
         if (notification.message?.startsWith('An error in deck.gl:') || notification.message?.startsWith('Your GPU was disconnected.')) {
           console.error(notification.message)
-          dispatch(setError(new Error('A map layer could not be displayed. Please refresh the report or report the issue.')))
+          dispatch(setError(new Error(t('A map layer could not be displayed. Please refresh the report or report the issue.'))))
           return
         }
         props.uiStateActions.addNotification(notification)
@@ -73,11 +76,11 @@ MapContainerWithRenderFactory.deps = MapContainerFactory.deps
 const KeplerGl = injectComponents([[MapContainerFactory, MapContainerWithRenderFactory]])
 
 // Build keyboard hint text for tab tooltips.
-function getTabShortcutLabel (tabIndex) {
+function getTabShortcutLabel (tabIndex, t) {
   if (tabIndex < 0 || tabIndex > 8) {
     return null
   }
-  return `In editor: Ctrl+Shift+${tabIndex + 1}`
+  return t('In editor: Ctrl+Shift+{index}', { index: tabIndex + 1 })
 }
 
 function TabIcon ({ job, duckDBJobState }) {
@@ -119,7 +122,7 @@ function TabIcon ({ job, duckDBJobState }) {
   )
 }
 
-function getOnTabEditHandler (dispatch, reportId, datasets) {
+function getOnTabEditHandler (dispatch, reportId, datasets, t) {
   return (datasetId, action) => {
     switch (action) {
       case 'add':
@@ -129,10 +132,10 @@ function getOnTabEditHandler (dispatch, reportId, datasets) {
         if (datasetId === 'readme') {
           track('RemoveReadmeClicked', { reportId })
           Modal.confirm({
-            title: 'Remove readme from report?',
-            okText: 'Yes',
+            title: t('Remove readme from report?'),
+            okText: t('Yes'),
             okType: 'danger',
-            cancelText: 'No',
+            cancelText: t('No'),
             onOk: () => {
               track('RemoveReadmeConfirmed', { reportId })
               dispatch(removeReadme())
@@ -157,6 +160,7 @@ function getOnTabEditHandler (dispatch, reportId, datasets) {
 }
 
 function QueryTooltip ({ job, dataset }) {
+  const { formatDateTime, t } = useI18n()
   const connectionList = useSelector(state => state.connection.list)
   if (!job) {
     return null
@@ -165,27 +169,27 @@ function QueryTooltip ({ job, dataset }) {
   const connection = connectionList.find(c => c.id === dataset.connectionId)
   const connectionMeta = connection ? getDatasourceMeta(connection.connectionType) : null
 
-  const processed = job.bytesProcessed ? `Processed ${prettyBites(job.bytesProcessed)}` : 'cached'
+  const processed = job.bytesProcessed ? t('Processed {size}', { size: prettyBites(job.bytesProcessed) }) : t('cached')
   return (
     <span className={styles.queryTooltip}>
       {
         connection && connectionMeta ? <span>{connection.connectionName} ({connectionMeta.name})</span> : null
       }
-      {updatedAt ? <span title={updatedAt.toISOString()}>{updatedAt.toLocaleString()}</span> : null}
+      {updatedAt ? <span title={updatedAt.toISOString()}>{formatDateTime(updatedAt)}</span> : null}
       <span>{processed}</span>
       {
-        job?.resultSize ? <span>Result {prettyBites(job.resultSize)}</span> : null
+        job?.resultSize ? <span>{t('Result {size}', { size: prettyBites(job.resultSize) })}</span> : null
       }
     </span>
   )
 }
 
-function getTabPane (dataset, datasets, files, status, queryJobs, duckDBJobStates, queryParamsHash, closable, lastDataset, tabIndex) {
+function getTabPane (dataset, datasets, files, status, queryJobs, duckDBJobStates, queryParamsHash, closable, lastDataset, tabIndex, t) {
   let changed = false
   const title = getDatasetName(dataset, datasets, files)
   let tabIcon = null
   let tooltip = null
-  const shortcutLabel = getTabShortcutLabel(tabIndex)
+  const shortcutLabel = getTabShortcutLabel(tabIndex, t)
   if (dataset.queryId) {
     const job = queryJobs.find(j =>
       j.queryId === dataset.queryId &&
@@ -200,7 +204,7 @@ function getTabPane (dataset, datasets, files, status, queryJobs, duckDBJobState
   const tabTitle = `${title}${changed ? '*' : ''}`
   let closeIcon
   if (dataset.queryId || dataset.fileId) {
-    closeIcon = <span title='Dataset setting'><MoreOutlined /></span>
+    closeIcon = <span title={t('Dataset setting')}><MoreOutlined /></span>
   }
   return (
     <Tabs.TabPane
@@ -236,6 +240,7 @@ function DatasetSection ({ reportId }) {
   const readOnly = useSelector(state => state.workspace.readOnly)
   const edit = useSelector(state => state.reportStatus.edit)
   const dispatch = useDispatch()
+  const { t } = useI18n()
   const readmeTab = []
   let showReadme = useSelector(state => state.readme.showTab)
   const canMutate = canWrite && edit && !readOnly
@@ -246,14 +251,14 @@ function DatasetSection ({ reportId }) {
   const disableSQL = !report.allowExport && !report.canWrite
 
   if (report.readme) {
-    const readmeShortcut = getTabShortcutLabel(0)
+    const readmeShortcut = getTabShortcutLabel(0, t)
     readmeTab.push(
       <Tabs.TabPane
         className={styles.addTabPane}
         tab={
           <Tooltip placement='bottom' title={readmeShortcut ? <span>{readmeShortcut}</span> : null}>
             <>
-              <ReadOutlined /> Readme
+              <ReadOutlined /> {t('Readme')}
             </>
           </Tooltip>
         }
@@ -304,7 +309,7 @@ function DatasetSection ({ reportId }) {
                     }
                   }}
                   hideAdd={!canMutate}
-                  onEdit={getOnTabEditHandler(dispatch, reportId, datasets)}
+                  onEdit={getOnTabEditHandler(dispatch, reportId, datasets, t)}
                 >
                   {readmeTab.concat(datasets.map((dataset, index) => getTabPane(
                     dataset,
@@ -316,7 +321,8 @@ function DatasetSection ({ reportId }) {
                     queryParamsHash,
                     closable,
                     lastDataset,
-                    index + (report.readme ? 1 : 0)
+                    index + (report.readme ? 1 : 0),
+                    t
                   )))}
                 </Tabs>
               </div>
@@ -333,6 +339,7 @@ function DatasetSection ({ reportId }) {
 }
 
 function Title () {
+  const { t } = useI18n()
   const reportStatus = useSelector(state => state.reportStatus)
   const { canWrite } = useSelector(state => state.report)
   const readOnly = useSelector(state => state.workspace.readOnly)
@@ -366,7 +373,7 @@ function Title () {
             track('ReportTitleChanged')
             dispatch(reportTitleChange(value))
           }}
-          placeholder='Untitled'
+          placeholder={t('Untitled')}
           autoFocus
           disabled={!(reportStatus.edit && canMutate)}
         />
@@ -388,7 +395,7 @@ function Title () {
               setEdit(true)
             }
           }}
-          title={readOnly ? 'Workspace is read-only' : 'Click to edit map title'}
+          title={readOnly ? t('Workspace is read-only') : t('Click to edit map title')}
         >{
             reportStatus.edit && canMutate ? <EditOutlined className={styles.titleEditIcon} /> : null
           }{reportStatus.title}
@@ -567,6 +574,12 @@ export default function ReportPage ({ edit, snapshot }) {
   const updatedAtDate = new Date(updatedAt * 1000)
 
   const dispatch = useDispatch()
+  const { locale, t } = useI18n()
+
+  // Kepler keeps its own locale state; keep the mounted map in sync with the app language.
+  useEffect(() => {
+    dispatch(setKeplerLocale(keplerLocaleFor(locale)))
+  }, [dispatch, locale])
 
   // Track report page views
   useEffect(() => {
@@ -641,8 +654,8 @@ export default function ReportPage ({ edit, snapshot }) {
     return <Loading />
   }
 
-  const reportTitle = report.title || 'Untitled Report'
-  const pageTitle = edit ? `${reportTitle} - Edit` : reportTitle
+  const reportTitle = report.title || t('Untitled Report')
+  const pageTitle = edit ? t('{title} - Edit', { title: reportTitle }) : reportTitle
 
   return (
     <div
@@ -693,7 +706,7 @@ export default function ReportPage ({ edit, snapshot }) {
                 <div className={styles.meta}>
                   {updatedAt ? <span className={styles.lastUpdated} title={`${updatedAtDate.toISOString()}`}>{updatedAtDate.toLocaleString()}</span> : null}
                   {updatedAt && report.authorEmail !== UNKNOWN_EMAIL ? <span className={styles.dot}> | </span> : null}
-                  {report.authorEmail !== UNKNOWN_EMAIL ? <span className={styles.author} title='Map author'>{report.authorEmail}</span> : null}
+                  {report.authorEmail !== UNKNOWN_EMAIL ? <span className={styles.author} title={t('Map author')}>{report.authorEmail}</span> : null}
                 </div>
                 )
               : null}

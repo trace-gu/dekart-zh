@@ -13,6 +13,7 @@ import waitForKeplerDataset from '../lib/waitForKeplerDataset'
 import ReportIssueLink from '../ReportIssueLink'
 import { track } from '../lib/tracking'
 import { consumeAutoCreateLayer, keplerDatasetFinishUpdating, keplerDatasetStartUpdating } from './kepler'
+import { t } from '../i18n'
 
 let duckDBDatabaseModule = null
 
@@ -102,7 +103,7 @@ export function removeDataset (datasetId, silent = false) {
     const request = new RemoveDatasetRequest()
     request.setDatasetId(datasetId)
     return dispatch(grpcCall(Dekart.RemoveDataset, request, () => {
-      if (!silent) dispatch(success('Dataset removed'))
+      if (!silent) dispatch(success(t('Dataset removed')))
     }))
   }
 }
@@ -129,7 +130,7 @@ export function processDownloadError (err, dataset, label, emptySourceRetained, 
     if (!resultExpired && !(emptyResult && emptySourceRetained)) {
       await dispatch(failDuckDBSource(
         dataset.id,
-        err.message || 'Dataset download failed',
+        err.message || t('Dataset download failed'),
         { downloadController: controller }
       ))
     }
@@ -138,7 +139,7 @@ export function processDownloadError (err, dataset, label, emptySourceRetained, 
     }
     dispatch({ type: processDownloadError.name, controller })
     if (emptyResult) {
-      dispatch(warn(<><i>{label}</i> Result is empty</>))
+      dispatch(warn(<><i>{label}</i> {t('Result is empty')}</>))
     } else if (resultExpired) { // gone from dw query temporary storage
       const state = getState()
       const { canRun, queryText } = state.queryStatus[dataset.queryId]
@@ -149,15 +150,15 @@ export function processDownloadError (err, dataset, label, emptySourceRetained, 
       // don't need to check if user can run query (report.CanWrite || report.Discoverable)
       // because report cannot be opened if it's not discoverable
       // so if user can open report, they can run query
-      dispatch(info(<><i>{label}</i> result expired, re-running</>, 'query-result-expired'))
+      dispatch(info(<><i>{label}</i> {t('result expired, re-running')}</>, 'query-result-expired'))
       dispatch(runWarehouseQuery(dataset.queryId, queryText))
     } else if (err.name === 'AbortError') {
-      dispatch(warn('Download cancelled'))
+      dispatch(warn(t('Download cancelled')))
     } else if (err.status === 0) {
       dispatch(setError(new Error('Network error when downloading dataset'), false))
     } else if (err.message === 'Kepler failed to publish the dataset.') {
       track('KeplerPublishTimeout', { report_id: getState().report?.id })
-      dispatch(warn(<>{err.message} <ReportIssueLink category='dataset publication' /></>, false))
+      dispatch(warn(<>{t(err.message)} <ReportIssueLink category='dataset publication' /></>, false))
     } else {
       dispatch(setError(err))
     }
@@ -392,7 +393,7 @@ export function cancelDownloading () {
     for (const download of downloads) {
       await dispatch(failDuckDBSource(
         download.dataset.id,
-        'Download cancelled by user',
+        t('Download cancelled by user'),
         { sourceVersion: download.sourceId }
       ))
     }

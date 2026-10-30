@@ -9,6 +9,7 @@ import reducer from './reducers/rootReducer'
 import { enhanceReduxMiddleware } from '@kepler.gl/reducers'
 import { setTrackingStore, setTrackEventToServer } from './lib/tracking'
 import { trackEventToServer } from './actions/tracking'
+import { I18nProvider } from './i18n'
 
 const store = createStore(
   reducer,
@@ -23,7 +24,9 @@ setTrackEventToServer(trackEventToServer)
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <I18nProvider>
+      <App />
+    </I18nProvider>
   </Provider>
   ,
   document.getElementById('root')

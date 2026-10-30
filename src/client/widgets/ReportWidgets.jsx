@@ -9,6 +9,7 @@ import { createWidgetStore, fitWidgetPanels, suggestWidgets } from './widgetStor
 import { applyWidgetsConfig, serializeWidgetsConfig } from './widgetsConfig'
 import useWidgetSources from './useWidgetSources'
 import { widgetsChanged, widgetsDefaultsConsumed } from '../actions/widgets'
+import { useI18n } from '../i18n'
 import styles from './ReportWidgets.module.css'
 import './theme.css'
 const emptyTables = {}
@@ -61,6 +62,7 @@ function adoptWidgetsConfig (store, adoption, persisted, datasetIds, datasetKey,
 export default function ReportWidgets ({
   visible, snapshot, editing, presentationPending, dataReloadPending, onSettled
 }) {
+  const { t } = useI18n()
   const [queryPending, setQueryPending] = useState(false)
   const [error, setError] = useState('')
   const [configRevision, setConfigRevision] = useState(0)
@@ -200,19 +202,19 @@ export default function ReportWidgets ({
             [styles.projecting]: filterProjectionPending,
             [styles.snapshot]: snapshot
           })}
-          aria-label='Report charts'
+          aria-label={t('Report charts')}
           aria-busy={calculating || filterProjectionPending}
         >
           <div
             className={styles.calculationLine}
             role='status'
             aria-hidden={!(calculating || filterProjectionPending)}
-            aria-label='Updating charts'
+            aria-label={t('Updating charts')}
             data-testid='chart-calculation-line'
           />
           {widgets.conflict && (
             <div role='alert' className={styles.error}>
-              This report changed in another session. Reload to use the latest saved dashboard.
+              {t('This report changed in another session. Reload to use the latest saved dashboard.')}
             </div>
           )}
           {error || widgets.error

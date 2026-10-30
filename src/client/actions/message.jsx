@@ -5,6 +5,7 @@ import MapConfigConflictMessage from '../MapConfigConflictMessage'
 import ReportIssueLink from '../ReportIssueLink'
 import errorStyles from '../ErrorMessage.module.css'
 import { track } from '../lib/tracking'
+import { t } from '../i18n'
 
 const style = {}
 const STREAM_ERROR_KEY = 'stream-error'
@@ -45,7 +46,7 @@ export function success (content) {
 export function trialSuccess () {
   track('TrialSuccessMessage')
   message.success({
-    content: 'Trial started! You now have full access',
+    content: t('Trial started! You now have full access'),
     style
   })
   return { type: trialSuccess.name }
@@ -92,7 +93,7 @@ export function setError (err, transitive = true) {
       if (transitive) {
         message.error({
           key: err.message,
-          content: <span className={errorStyles.content}><span className={errorStyles.text} data-testid='error-message-text'>{err.message}</span><ReportIssueLink category='application error' /></span>,
+          content: <span className={errorStyles.content}><span className={errorStyles.text} data-testid='error-message-text'>{t(err.message)}</span><ReportIssueLink category='application error' /></span>,
           duration: 10,
           className: errorStyles.notice,
           style
@@ -100,7 +101,7 @@ export function setError (err, transitive = true) {
       } else {
         message.error({
           key: err.message,
-          content: (<PermanentError message={err.message} />),
+          content: (<PermanentError message={t(err.message)} />),
           duration: 10000,
           className: errorStyles.notice,
           style
@@ -150,7 +151,7 @@ export function setStreamError (code, msg) {
     switch (code) {
       case 1:
         track('RequestCancelled')
-        dispatch(info('Request cancelled'))
+        dispatch(info(t('Request cancelled')))
         return
       case 2:
         if (httpError.status === 401) {

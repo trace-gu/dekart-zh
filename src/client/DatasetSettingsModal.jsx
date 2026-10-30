@@ -7,9 +7,11 @@ import { useState, useEffect } from 'react'
 import getDatasetName from './lib/getDatasetName'
 import { closeDatasetSettingsModal, removeDataset, updateDatasetName } from './actions/dataset'
 import { track } from './lib/tracking'
+import { useI18n } from './i18n'
 
 function ModalFooter ({ saving, setSaving, name, datasetId }) {
   const dispatch = useDispatch()
+  const { t } = useI18n()
   const numDatasets = useSelector(state => state.dataset.list.length)
   const isViewer = useSelector(state => state.user.isViewer)
 
@@ -24,7 +26,7 @@ function ModalFooter ({ saving, setSaving, name, datasetId }) {
           dispatch(updateDatasetName(datasetId, name))
         }}
       >
-        Save
+        {t('Save')}
       </Button>
       <Button
         danger
@@ -32,10 +34,10 @@ function ModalFooter ({ saving, setSaving, name, datasetId }) {
           track('DeleteDatasetClicked', { datasetId })
           dispatch(closeDatasetSettingsModal())
           Modal.confirm({
-            title: 'Remove dataset from map?',
-            okText: 'Yes',
+            title: t('Remove dataset from map?'),
+            okText: t('Yes'),
             okType: 'danger',
-            cancelText: 'No',
+            cancelText: t('No'),
             onOk: () => {
               track('DeleteDatasetConfirmed', { datasetId })
               dispatch(removeDataset(datasetId))
@@ -44,7 +46,7 @@ function ModalFooter ({ saving, setSaving, name, datasetId }) {
         }}
         disabled={numDatasets < 2 || saving}
       >
-        Delete Dataset
+        {t('Delete Dataset')}
       </Button>
     </div>
 
@@ -52,6 +54,7 @@ function ModalFooter ({ saving, setSaving, name, datasetId }) {
 }
 
 export default function DatasetSettingsModal () {
+  const { t } = useI18n()
   const datasetId = useSelector(state => state.dataset.settings.datasetId)
   const dataset = useSelector(state => state.dataset.list.find(d => d.id === datasetId))
   const datasets = useSelector(state => state.dataset.list)
@@ -80,7 +83,7 @@ export default function DatasetSettingsModal () {
   return (
     <Modal
       open
-      title='Dataset Settings'
+      title={t('Dataset Settings')}
       onCancel={() => dispatch(closeDatasetSettingsModal())}
       footer={
         <ModalFooter

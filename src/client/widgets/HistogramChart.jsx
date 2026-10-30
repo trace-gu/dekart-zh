@@ -8,6 +8,7 @@ import {
 import { createHistogramSpec } from '@sqlrooms/mosaic/dist/charts/chart-types/histogram/spec'
 import usePaintedRetention from './usePaintedRetention'
 import { compatibleWidgetFilter } from './compatibleWidgetFilter'
+import { useI18n } from '../i18n'
 
 const noClients = []
 
@@ -30,11 +31,12 @@ export function createDekartHistogramSpec (options) {
 // new instance still publishes its interactors for filter ownership.
 export default function HistogramChart (props) {
   const { config, dataTable, runtimeIssueReporter } = props
+  const { t } = useI18n()
   const missingField = !dataTable.columns.some(column => column.name === config.settings.field)
   useEffect(() => {
     // Preflight missing fields before mounting vgplot and its selection clients.
-    if (missingField) runtimeIssueReporter.reportIssue({ message: 'Chart failed' })
-  }, [missingField, runtimeIssueReporter])
+    if (missingField) runtimeIssueReporter.reportIssue({ message: t('Chart failed') })
+  }, [missingField, runtimeIssueReporter, t])
   // The Dekart panel wrapper owns the shared failure presentation.
   if (missingField) return null
   return <HistogramChartBody {...props} />
@@ -44,6 +46,7 @@ function HistogramChartBody ({
   config, dataTable, selectionName, retention, params, dataPolicy,
   runtimeIssueContext, runtimeIssueReporter
 }) {
+  const { t } = useI18n()
   const runtimeKey = useStoreWithMosaicDashboard(state => {
     for (const [dashboardId, dashboard] of Object.entries(state.mosaicDashboard.config.dashboardsById)) {
       const panel = dashboard.panels.find(panel => panel.config === config)
@@ -106,8 +109,8 @@ function HistogramChartBody ({
   const writeOnlyRetention = usePaintedRetention(retention, panelId, runtimeIssueContext.panelId)
   useEffect(() => {
     // Histogram spec failures use the same sticky panel channel as query failures.
-    if (!spec) runtimeIssueReporter.reportIssue({ message: 'Chart failed' })
-  }, [runtimeIssueReporter, spec])
+    if (!spec) runtimeIssueReporter.reportIssue({ message: t('Chart failed') })
+  }, [runtimeIssueReporter, spec, t])
   if (!spec) return null
   return (
     <VgPlotChart

@@ -10,8 +10,10 @@ import { useEffect, useRef, useState } from 'react'
 import { setError } from './actions/message'
 import Skeleton from 'antd/es/skeleton'
 import { track } from './lib/tracking'
+import { useI18n } from './i18n'
 
 export default function AnalyticsModal () {
+  const { t } = useI18n()
   const { modalOpen, data: analytics } = useSelector(state => state.analytics)
   const userStream = useSelector(state => state.user.stream)
   const dispatch = useDispatch()
@@ -52,7 +54,7 @@ export default function AnalyticsModal () {
 
   return (
     <Modal
-      title='Viewer Analytics'
+      title={t('Viewer Analytics')}
       open={modalOpen}
       onCancel={() => dispatch(setAnalyticsModalOpen(false))}
       footer={null}
@@ -64,13 +66,13 @@ export default function AnalyticsModal () {
             <div className={styles.modalContent}>
               <div className={styles.stats}>
                 <div className={styles.statsColumn}>
-                  <Statistic title='Last 24 hours' value={analytics.viewers24h} prefix={<UserOutlined />} />
+                  <Statistic title={t('Last 24 hours')} value={analytics.viewers24h} prefix={<UserOutlined />} />
                 </div>
                 <div className={styles.statsColumn}>
-                  <Statistic title='Last 7 days' value={analytics.viewers7d} prefix={<UserOutlined />} />
+                  <Statistic title={t('Last 7 days')} value={analytics.viewers7d} prefix={<UserOutlined />} />
                 </div>
                 <div className={styles.statsColumn}>
-                  <Statistic title='All time' value={analytics.viewersTotal} prefix={<UserOutlined />} />
+                  <Statistic title={t('All time')} value={analytics.viewersTotal} prefix={<UserOutlined />} />
                 </div>
               </div>
               <div className={styles.downloadButton}>
@@ -78,7 +80,7 @@ export default function AnalyticsModal () {
                   loading={loading} type='primary' ref={buttonRef} href='#' disabled={loading} onClick={() => {
                     track('DownloadAnalyticsCSV', { reportId: report.id })
                   }}
-                >Download CSV
+                >{t('Download CSV')}
                 </Button>
               </div>
             </div>

@@ -9,9 +9,11 @@ import { DUCKDB_DATASOURCE, isDuckDBQuery } from './lib/duckdb/constants'
 import { getDuckDBSampleQuery, getDuckDBSources } from './lib/duckdb/datasets'
 import { getDatasourceMeta } from './lib/datasource'
 import { track } from './lib/tracking'
+import { useI18n } from './i18n'
 
 // Render the documentation, runnable sample, or examples link for an empty query editor.
 export default function SampleQuery ({ queryId }) {
+  const { t } = useI18n()
   const { UX_SAMPLE_QUERY_SQL, UX_DATA_DOCUMENTATION } = useSelector(state => state.env.variables)
   const queryStatus = useSelector(state => state.queryStatus[queryId])
   const dataset = useSelector(state => state.dataset.list.find(q => q.queryId === queryId))
@@ -61,13 +63,13 @@ export default function SampleQuery ({ queryId }) {
   if (showSampleQuery) {
     return (
       <div className={styles.sampleQuery}>
-        <Tooltip title={<>Don't know where to start?<br />Try running public dataset query.</>}>
+        <Tooltip title={<>{t("Don't know where to start?")}<br />{t('Try running public dataset query.')}</>}>
           <Button
             type='link' onClick={() => {
               track('SampleQueryClicked', { queryId })
               dispatch(queryChanged(queryId, showSampleQuery))
             }}
-          >💡 Start with a sample query
+          >{t('💡 Start with a sample query')}
           </Button>
         </Tooltip>
       </div>
@@ -77,12 +79,12 @@ export default function SampleQuery ({ queryId }) {
   if (examplesUrl) {
     return (
       <div className={styles.sampleQuery}>
-        <Tooltip title={<>Don't know where to start?<br />Try running public dataset query.</>}>
+        <Tooltip title={<>{t("Don't know where to start?")}<br />{t('Try running public dataset query.')}</>}>
           <a
             href={examplesUrl}
             target='_blank'
             rel='noreferrer'
-          >💡 Start with public dataset query
+          >{t('💡 Start with public dataset query')}
           </a>
         </Tooltip>
       </div>

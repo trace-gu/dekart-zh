@@ -1,6 +1,14 @@
-const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+const formatters = {}
 
-export function getRelativeTime (date) {
+function formatterFor (locale) {
+  if (!formatters[locale]) {
+    formatters[locale] = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+  }
+  return formatters[locale]
+}
+
+export function getRelativeTime (date, locale = 'en') {
+  const rtf = formatterFor(locale)
   const now = new Date()
   const diffMs = now - date
   const diffSecs = Math.floor(diffMs / 1000)
@@ -11,7 +19,7 @@ export function getRelativeTime (date) {
   const diffMonths = Math.floor(diffDays / 30)
   const diffYears = Math.floor(diffDays / 365)
 
-  if (diffSecs < 60) return 'just now'
+  if (diffSecs < 60) return null
   if (diffMins < 60) return rtf.format(-diffMins, 'minute')
   if (diffHours < 24) return rtf.format(-diffHours, 'hour')
   if (diffDays < 7) return rtf.format(-diffDays, 'day')

@@ -10,11 +10,13 @@ import PricingBlock from './PricingBlock'
 import { createSubscription } from './actions/workspace'
 import { track } from './lib/tracking'
 import styles from './TrialPage.module.css'
+import { useI18n } from './i18n'
 
 const contactURL = 'https://calendly.com/vladi-dekart/meet-vladi'
 
 // TrialPage acknowledges Cloud trial terms and starts the existing trial subscription flow.
 export default function TrialPage () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const userStream = useSelector(state => state.user.stream)
   const isAdmin = useSelector(state => state.user.isAdmin)
@@ -57,22 +59,22 @@ export default function TrialPage () {
       if (err?.code === 10) return null
       // InvalidArgument indicates a workspace subscription state that requires support.
       if (err?.code === 3) {
-        setError(<>We could not start the trial for this workspace. <a href={contactURL} target='_blank' rel='noreferrer'>Book a call</a> and we will help.</>)
+        setError(<>{t('We could not start the trial for this workspace.')} <a href={contactURL} target='_blank' rel='noreferrer'>{t('Book a call')}</a> {t('and we will help.')}</>)
       } else {
-        setError('Could not start the trial. Please try again.')
+        setError(t('Could not start the trial. Please try again.'))
       }
       return null
     }))
   }
 
-  const title = isAdmin ? (workspace.id ? 'Your 14-day trial' : 'Start your 14-day trial') : 'Ask your workspace admin to start the trial'
+  const title = isAdmin ? (workspace.id ? t('Your 14-day trial') : t('Start your 14-day trial')) : t('Ask your workspace admin to start the trial')
   const subtitle = isAdmin
-    ? 'Unlimited maps, editors, viewers and database connections.'
-    : 'This workspace is on the free plan and is read-only until someone with admin access starts the 14-day trial.'
+    ? t('Unlimited maps, editors, viewers and database connections.')
+    : t('This workspace is on the free plan and is read-only until someone with admin access starts the 14-day trial.')
 
   return (
     <div className={styles.trialPage}>
-      <Helmet><title>Start your trial - Dekart</title></Helmet>
+      <Helmet><title>{t('Start your trial - Dekart')}</title></Helmet>
       <Header />
       <div className={styles.body}>
         <main className={styles.content}>
@@ -82,13 +84,13 @@ export default function TrialPage () {
             ? (
               <div className={styles.action}>
                 <div className={styles.error} aria-live='polite'>{error}</div>
-                <Button id='dekart-start-trial' type='primary' size='large' loading={loading} disabled={!revision} onClick={startTrial}>Start 14-day trial</Button>
-                <div className={styles.noCard}>No credit card required</div>
+                <Button id='dekart-start-trial' type='primary' size='large' loading={loading} disabled={!revision} onClick={startTrial}>{t('Start 14-day trial')}</Button>
+                <div className={styles.noCard}>{t('No credit card required')}</div>
               </div>
               )
             : null}
           <div className={styles.afterTrial}>
-            <p>When your trial ends, the workspace becomes read-only. Your maps stay viewable, and you can pay or book a call to keep editing.</p>
+            <p>{t('When your trial ends, the workspace becomes read-only. Your maps stay viewable, and you can pay or book a call to keep editing.')}</p>
             <PricingBlock variant='trial' />
           </div>
         </main>

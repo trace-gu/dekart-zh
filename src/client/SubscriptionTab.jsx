@@ -6,8 +6,10 @@ import { useSelector } from 'react-redux'
 import { track } from './lib/tracking'
 import Plans from './Plans'
 import { Loading } from './Loading'
+import { useI18n } from './i18n'
 
 function TrialBanner () {
+  const { t } = useI18n()
   const expired = useSelector(state => state.workspace.subscription?.expired)
   const isTrial = useSelector(state => state.user.isTrial)
   if (!expired || isTrial) {
@@ -19,9 +21,9 @@ function TrialBanner () {
       <div className={styles.trialMessage}>
         <AlertOutlined className={styles.trialIcon} />
         <div>
-          <div className={styles.trialHeadline}>No active subscription</div>
+          <div className={styles.trialHeadline}>{t('No active subscription')}</div>
           <div className={styles.trialDescription}>
-            Upgrade to resume creating maps and sharing with your team.
+            {t('Upgrade to resume creating maps and sharing with your team.')}
           </div>
         </div>
       </div>
@@ -35,7 +37,7 @@ function TrialBanner () {
           rel='noreferrer'
           onClick={() => track('BookCallFromTrialBanner', { isTrial })}
         >
-          Book a call
+          {t('Book a call')}
         </Button>
       </div>
     </div>
@@ -43,6 +45,7 @@ function TrialBanner () {
 }
 
 export default function SubscriptionTab () {
+  const { t } = useI18n()
   const userStream = useSelector(state => state.user.stream)
   const isSelfHosted = useSelector(state => state.user.isSelfHosted)
   const workspaceId = useSelector(state => state.workspace.id)
@@ -64,7 +67,7 @@ export default function SubscriptionTab () {
     <div className={styles.subscriptionTab}>
       <TrialBanner />
       <Plans />
-      <div className={styles.termsLink}><a href='https://dekart.xyz/legal/terms/' target='_blank' rel='noreferrer'>Terms and conditions</a></div>
+      <div className={styles.termsLink}><a href='https://dekart.xyz/legal/terms/' target='_blank' rel='noreferrer'>{t('Terms and conditions')}</a></div>
     </div>
   )
 }

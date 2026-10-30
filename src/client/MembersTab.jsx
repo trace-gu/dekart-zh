@@ -12,6 +12,7 @@ import Select from 'antd/es/select'
 import { track } from './lib/tracking'
 import Typography from 'antd/es/typography'
 import { UNKNOWN_EMAIL } from './lib/constants'
+import { useI18n } from './i18n'
 
 const { Text } = Typography
 
@@ -33,12 +34,13 @@ function getRoleTitle (role, planType) {
 }
 
 export default function MembersTab () {
+  const { t } = useI18n()
   const users = useSelector(state => state.workspace.users)
   const addedUsersCount = useSelector(state => state.workspace.addedUsersCount)
   const userStream = useSelector(state => state.user.stream)
   const planType = userStream?.planType
   const roleOptions = [UserRole.ROLE_ADMIN, UserRole.ROLE_EDITOR, UserRole.ROLE_VIEWER]
-    .map(role => ({ value: role, label: getRoleTitle(role, planType) }))
+    .map(role => ({ value: role, label: t(getRoleTitle(role, planType)) }))
   const dispatch = useDispatch()
   const [email, setEmail] = useState('')
   const [inviteRole, setInviteRole] = useState(UserRole.ROLE_VIEWER)
@@ -86,9 +88,9 @@ export default function MembersTab () {
               name='email'
               type='email'
               autoComplete='email'
-              aria-label='Email'
+              aria-label={t('Email')}
               pattern='^[a-zA-Z0-9._%+\-@]*$'
-              placeholder='Email' value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder={t('Email')} value={email} onChange={(e) => setEmail(e.target.value)}
               onPressEnter={addUserCb}
             />
             <Select
@@ -105,7 +107,7 @@ export default function MembersTab () {
               className={styles.inviteUsersButton} type='primary' onClick={() => {
                 addUserCb()
               }}
-            >Invite user
+            >{t('Invite user')}
             </Button>
           </div>
           )
@@ -118,7 +120,7 @@ export default function MembersTab () {
                 <Text strong className={styles.memberName}>{u.email}</Text>
               </div>
               <div className={styles.memberStatusColumn}>
-                <Tag className={styles.statusTag}>{['Unknown', 'Pending', 'Active', 'Removed', 'Rejected'][u.status]}</Tag>
+                <Tag className={styles.statusTag}>{t(['Unknown', 'Pending', 'Active', 'Removed', 'Rejected'][u.status])}</Tag>
               </div>
               <div className={styles.memberCopyColumn}>
                 {u.status === 1 && canManageMembership
@@ -126,14 +128,14 @@ export default function MembersTab () {
                     <Button
                       icon={<CopyOutlined />}
                       className={styles.inviteButton}
-                      title='Copy invite link'
+                      title={t('Copy invite link')}
                       type='text'
                       onClick={() => {
                         track('CopyInviteLink', { inviteId: u.inviteId })
-                        dispatch(copyUrlToClipboard(`${window.location.origin}/workspace/invite/${u.inviteId}`, 'Invite link copied to clipboard'))
+                        dispatch(copyUrlToClipboard(`${window.location.origin}/workspace/invite/${u.inviteId}`, t('Invite link copied to clipboard')))
                       }}
                     >
-                      Copy invite link
+                      {t('Copy invite link')}
                     </Button>
                     )
                   : null}
@@ -153,7 +155,7 @@ export default function MembersTab () {
                       options={roleOptions}
                     />
                     )
-                  : <Text>{getRoleTitle(u.role, planType)}</Text>}
+                  : <Text>{t(getRoleTitle(u.role, planType))}</Text>}
               </div>
               <div className={styles.memberActions}>
                 {hasAuthenticatedUser ? <RemoveButton email={u.email} /> : null}
@@ -168,6 +170,7 @@ export default function MembersTab () {
 }
 
 function RemoveButton ({ email }) {
+  const { t } = useI18n()
   const [removing, setRemoving] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const dispatch = useDispatch()
@@ -185,14 +188,14 @@ function RemoveButton ({ email }) {
         type='text'
         disabled={disabled}
         loading={removing}
-        title={email === userStream.email ? 'You cannot remove yourself' : undefined}
+        title={email === userStream.email ? t('You cannot remove yourself') : undefined}
         className={styles.removeButton}
         onClick={() => {
           track('RemoveUserFromWorkspace', { email })
           setRemoving(true)
           dispatch(updateWorkspaceUser(email, UpdateWorkspaceUserRequest.UserUpdateType.USER_UPDATE_TYPE_REMOVE))
         }}
-      >Confirm
+      >{t('Confirm')}
       </Button>
     )
   }
@@ -201,12 +204,12 @@ function RemoveButton ({ email }) {
     <Button
       disabled={disabled}
       loading={removing}
-      title={email === userStream.email ? 'You cannot remove yourself' : undefined}
+      title={email === userStream.email ? t('You cannot remove yourself') : undefined}
       className={styles.removeButton}
       type='text' onClick={() => {
         setConfirming(true)
       }}
-    >Remove
+    >{t('Remove')}
     </Button>
   )
 }

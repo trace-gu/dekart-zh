@@ -8,6 +8,7 @@ import classnames from 'classnames'
 import { setLocation, stopLocationTracking } from './actions/location'
 import { warn } from './actions/message'
 import { track } from './lib/tracking'
+import { useI18n } from './i18n'
 
 function useUserLocation (isActive) {
   const [isGeolocationSupported, setIsGeolocationSupported] = useState(true)
@@ -78,6 +79,7 @@ function useUserLocation (isActive) {
 }
 
 export default function ShowMyLocationButton () {
+  const { t } = useI18n()
   const [isActive, setIsActive] = useState(false)
   const { isGeolocationSupported } = useUserLocation(isActive)
 
@@ -88,7 +90,7 @@ export default function ShowMyLocationButton () {
 
   return (
     <div className={styles.showMyLocation}>
-      <Tooltip title={isActive ? 'Hide my location' : 'Show my location'} placement='left'>
+      <Tooltip title={isActive ? t('Hide my location') : t('Show my location')} placement='left'>
         <MapControlButton
           id='dekart-show-my-location'
           active={isActive}

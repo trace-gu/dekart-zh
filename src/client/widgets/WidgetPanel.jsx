@@ -3,6 +3,7 @@ import { AlertTriangle } from 'lucide-react'
 import { useStoreWithMosaicDashboard } from '@sqlrooms/mosaic'
 import { useTablesWithColumns } from '@sqlrooms/mosaic/dist/hooks/useTablesWithColumns'
 import { resolveMosaicTableReference } from '@sqlrooms/mosaic/dist/mosaicTableReference'
+import { useI18n } from '../i18n'
 import styles from './ReportWidgets.module.css'
 
 const WidgetSlotContext = createContext(null)
@@ -24,12 +25,13 @@ function useMarkPanelPainted (panelId, painted) {
 
 // Keep technical failure details out of the DOM while preserving the panel shell.
 function WidgetFailure ({ panelId }) {
+  const { t } = useI18n()
   useMarkPanelPainted(panelId, true)
   return (
     <div className={styles.widgetFailure} role='alert'>
       <AlertTriangle size={13} color='#E86A6F' aria-hidden='true' />
       <span>
-        This chart couldn&apos;t load. <button type='button' onClick={handleReloadPage}>Reload the page.</button>
+        {t("This chart couldn't load.")} <button type='button' onClick={handleReloadPage}>{t('Reload the page.')}</button>
       </span>
     </div>
   )
@@ -67,6 +69,7 @@ class WidgetErrorBoundary extends Component {
 
 // Replace only the chart body so the upstream title and actions remain intact.
 export default function DekartChartPanel ({ Renderer, ...props }) {
+  const { t } = useI18n()
   const { dashboard, panel } = props
   // lets the status reach the panel through the SQLRooms components between them
   const slot = useContext(WidgetSlotContext)
@@ -89,7 +92,7 @@ export default function DekartChartPanel ({ Renderer, ...props }) {
   // Renderer failures remain sticky; source and filter errors use the same safe message without becoming sticky.
   if (failed || shouldFail || sourceError) return <WidgetFailure panelId={panel.id} />
   // snapshot only
-  if (sourceEmpty) return <div className={styles.empty}>No data to chart yet.</div>
+  if (sourceEmpty) return <div className={styles.empty}>{t('No data to chart yet.')}</div>
   // Tables and the shared connection can be registered after the panel shell mounts.
   if (sourceUnavailable || !dataTable || connectionStatus === 'loading' || connectionStatus === 'idle') return <WidgetStub />
   return (

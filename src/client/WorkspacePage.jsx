@@ -28,8 +28,10 @@ import Select from 'antd/es/select'
 import { Loading } from './Loading'
 import DeviceTokensTab from './DeviceTokensTab'
 import WorkspaceReadOnlyBanner from './WorkspaceReadOnlyBanner'
+import { t, useI18n } from './i18n'
 
 function Invites () {
+  const { t } = useI18n()
   const workspace = useSelector(state => state.workspace)
   const invites = workspace.invites
   const dispatch = useDispatch()
@@ -39,11 +41,11 @@ function Invites () {
         ? (
           <Onboarding
             icon={<TeamOutlined />}
-            title='Awaiting an Invitation?'
+            title={t('Awaiting an Invitation?')}
             steps={
               <ol>
-                <li>Ask a current member to send an invite to your email from the User Menu → Manage Workspace.</li>
-                <li>Once they've sent it, you'll be able to accept the invitation here.</li>
+                <li>{t('Ask a current member to send an invite to your email from the User Menu → Manage Workspace.')}</li>
+                <li>{t("Once they've sent it, you'll be able to accept the invitation here.")}</li>
               </ol>
             }
           />
@@ -60,12 +62,12 @@ function Invites () {
                   className: styles.workspaceNameColumn,
                   render: (invite) => (
                     <>
-                      <div className={styles.workspaceName}>Join <i>{invite.workspaceName}</i></div>
-                      <div className={styles.inviterEmail}>invited by {invite.inviterEmail}</div>
+                      <div className={styles.workspaceName}>{t('Join')} <i>{invite.workspaceName}</i></div>
+                      <div className={styles.inviterEmail}>{t('invited by {email}', { email: invite.inviterEmail })}</div>
                     </>)
                 },
                 {
-                  title: 'Actions',
+                  title: t('Actions'),
                   key: 'actions',
                   className: styles.inviteActionsColumn,
                   render: (invite) => (
@@ -77,7 +79,7 @@ function Invites () {
                           track('AcceptWorkspaceInvite', { inviteId: invite.inviteId })
                           dispatch(respondToInvite(invite.inviteId, true))
                         }}
-                      >Accept
+                      >{t('Accept')}
                       </Button>
                       <Button
                         type='danger'
@@ -85,7 +87,7 @@ function Invites () {
                           track('DeclineWorkspaceInvite', { inviteId: invite.inviteId })
                           dispatch(respondToInvite(invite.inviteId, false))
                         }}
-                      >Decline
+                      >{t('Decline')}
                       </Button>
                     </>)
                 }
@@ -123,6 +125,7 @@ function suggestWorkspaceName (email) {
 }
 
 function CreateWorkspaceForm () {
+  const { t } = useI18n()
   const [disabled, setDisabled] = useState(false)
   const email = useSelector(state => state.user.stream?.email)
   const isCloud = useSelector(state => state.env.isCloud)
@@ -150,28 +153,28 @@ function CreateWorkspaceForm () {
           dispatch(createWorkspace(values.name))
         }}
       >
-        <Form.Item label='Workspace Name' name='name' rules={[{ required: true, message: 'Workspace name is required' }]}>
-          <Input placeholder='Workspace name' />
+        <Form.Item label={t('Workspace Name')} name='name' rules={[{ required: true, message: t('Workspace name is required') }]}>
+          <Input placeholder={t('Workspace name')} />
         </Form.Item>
         {isCloud
           ? (
             <>
               <Form.Item
-                label='Where did you first hear about Dekart?'
+                label={t('Where did you first hear about Dekart?')}
                 name='source'
-                rules={[{ required: true, message: 'Please select a source' }]}
+                rules={[{ required: true, message: t('Please select a source') }]}
               >
                 <Select
-                  placeholder='Select a source'
+                  placeholder={t('Select a source')}
                   options={[
-                    { value: 'GoogleSearch', label: 'Google Search' },
-                    { value: 'Linked', label: 'LinkedIn Post' },
-                    { value: 'LinkedInDM', label: 'LinkedIn DM' },
-                    { value: 'ChatGPT', label: 'ChatGPT / AI Assistant' },
-                    { value: 'ClaudeSkill', label: 'Claude/Codex Skill' },
+                    { value: 'GoogleSearch', label: t('Google Search') },
+                    { value: 'Linked', label: t('LinkedIn Post') },
+                    { value: 'LinkedInDM', label: t('LinkedIn DM') },
+                    { value: 'ChatGPT', label: t('ChatGPT / AI Assistant') },
+                    { value: 'ClaudeSkill', label: t('Claude/Codex Skill') },
                     { value: 'MattForrest', label: 'Matt Forrest' },
-                    { value: 'Referral', label: 'Referral / Friend' },
-                    { value: 'Other', label: 'Other' }
+                    { value: 'Referral', label: t('Referral / Friend') },
+                    { value: 'Other', label: t('Other') }
                   ]}
                 />
               </Form.Item>
@@ -179,14 +182,14 @@ function CreateWorkspaceForm () {
                 {({ getFieldValue }) => getFieldValue('source') === 'Other'
                   ? (
                     <Form.Item
-                      label='Please specify'
+                      label={t('Please specify')}
                       name='sourceOther'
                       rules={[
-                        { required: true, message: 'Please enter source details' },
-                        { max: 120, message: 'Please keep it under 120 characters' }
+                        { required: true, message: t('Please enter source details') },
+                        { max: 120, message: t('Please keep it under 120 characters') }
                       ]}
                     >
-                      <Input placeholder='How did you hear about Dekart?' />
+                      <Input placeholder={t('How did you hear about Dekart?')} />
                     </Form.Item>
                     )
                   : null}
@@ -196,7 +199,7 @@ function CreateWorkspaceForm () {
           : null}
         <Form.Item>
           <Button type='primary' htmlType='submit'>
-            Create Workspace
+            {t('Create Workspace')}
           </Button>
         </Form.Item>
       </Form>
@@ -213,6 +216,7 @@ const subscriptionPlanNames = {
 
 // The server checks permissions and billing again when the confirmed command arrives.
 function DeleteWorkspaceSection () {
+  const { t } = useI18n()
   const workspace = useSelector(state => state.workspace)
   const isCloud = useSelector(state => state.env.isCloud)
   const isAdmin = useSelector(state => state.user.isAdmin)
@@ -223,12 +227,12 @@ function DeleteWorkspaceSection () {
   const requiresCancellation = Boolean(workspace.subscription?.stripeSubscriptionId) && !workspace.subscription.cancelAt
   if (!isCloud || !isAdmin || isDefault) return null
   return (
-    <Card title='Danger zone' className={styles.dangerZone}>
+    <Card title={t('Danger zone')} className={styles.dangerZone}>
       <div className={styles.deleteWorkspaceRow}>
         <div className={styles.deleteWorkspaceDescription}>
-          <div className={styles.deleteWorkspaceTitle}>Delete workspace</div>
+          <div className={styles.deleteWorkspaceTitle}>{t('Delete workspace')}</div>
           <div className={styles.secondaryText}>
-            Permanently delete this workspace, its maps, data and connections. This cannot be undone.
+            {t('Permanently delete this workspace, its maps, data and connections. This cannot be undone.')}
           </div>
         </div>
         <Button
@@ -239,34 +243,35 @@ function DeleteWorkspaceSection () {
             setOpen(true)
           }}
         >
-          Delete workspace
+          {t('Delete workspace')}
         </Button>
       </div>
       {requiresCancellation && (
         <Alert
           className={styles.subscriptionWarning}
           type='warning'
-          message={`Active ${subscriptionPlanNames[workspace.subscription.planType]} subscription`}
-          description='Cancel your subscription before deleting this workspace.'
-          action={<Button onClick={() => dispatch(redirectToCustomerPortal())}>Manage subscription</Button>}
+          message={t('Active {plan} subscription', { plan: t(subscriptionPlanNames[workspace.subscription.planType]) })}
+          description={t('Cancel your subscription before deleting this workspace.')}
+          action={<Button onClick={() => dispatch(redirectToCustomerPortal())}>{t('Manage subscription')}</Button>}
         />
       )}
       <Modal
-        title='Delete workspace'
+        title={t('Delete workspace')}
         open={open}
         onCancel={() => setOpen(false)}
-        okText='Delete'
+        okText={t('Delete')}
         okButtonProps={{ danger: true, disabled: name !== workspace.name }}
         onOk={() => dispatch(deleteWorkspace(workspace.id))}
       >
-        <p>Type {workspace.name} to permanently delete this workspace.</p>
-        <Input aria-label='Workspace name to delete' value={name} onChange={e => setName(e.target.value)} />
+        <p>{t('Type {name} to permanently delete this workspace.', { name: workspace.name })}</p>
+        <Input aria-label={t('Workspace name to delete')} value={name} onChange={e => setName(e.target.value)} />
       </Modal>
     </Card>
   )
 }
 
 function UpdateWorkspaceForm () {
+  const { t } = useI18n()
   const workspace = useSelector(state => state.workspace)
   const isAdmin = useSelector(state => state.user.isAdmin)
   const [disabled, setDisabled] = useState(!isAdmin)
@@ -277,7 +282,7 @@ function UpdateWorkspaceForm () {
     setDisabled(!isAdmin)
   }, [workspace, isAdmin])
   return (
-    <Card title='General'>
+    <Card title={t('General')}>
       <Form
         form={form}
         className={styles.generalForm}
@@ -292,29 +297,29 @@ function UpdateWorkspaceForm () {
       >
         <Form.Item
           name='name'
-          label='Workspace name'
-          rules={[{ required: true, whitespace: true, message: 'Workspace name is required' }]}
+          label={t('Workspace name')}
+          rules={[{ required: true, whitespace: true, message: t('Workspace name is required') }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
-          label='Workspace ID'
+          label={t('Workspace ID')}
           htmlFor='workspaceIDReadOnly'
-          extra='Used to reference this workspace in API calls and support requests.'
+          extra={t('Used to reference this workspace in API calls and support requests.')}
         >
           <Input.Group compact className={styles.workspaceId}>
             <Input
               id='workspaceIDReadOnly'
-              aria-label='Workspace ID'
+              aria-label={t('Workspace ID')}
               value={workspace.id}
               readOnly
               disabled={false}
             />
             <Button
               disabled={false}
-              onClick={() => dispatch(copyUrlToClipboard(workspace.id, 'Workspace ID copied'))}
+              onClick={() => dispatch(copyUrlToClipboard(workspace.id, t('Workspace ID copied')))}
             >
-              Copy
+              {t('Copy')}
             </Button>
           </Input.Group>
         </Form.Item>
@@ -323,7 +328,7 @@ function UpdateWorkspaceForm () {
           htmlType='submit'
           disabled={disabled || !name?.trim() || name === workspace.name}
         >
-          Save changes
+          {t('Save changes')}
         </Button>
       </Form>
     </Card>
@@ -331,6 +336,7 @@ function UpdateWorkspaceForm () {
 }
 
 function WorkspaceTab ({ nextStep, setNextStep, isCreatingAdditionalWorkspace }) {
+  const { t } = useI18n()
   const userStream = useSelector(state => state.user.stream)
   const workspace = useSelector(state => state.workspace)
   const invites = workspace.invites
@@ -342,9 +348,9 @@ function WorkspaceTab ({ nextStep, setNextStep, isCreatingAdditionalWorkspace })
     form = <Invites />
   }
 
-  let title = 'Create workspace'
+  let title = t('Create workspace')
   if (nextStep === 'invites') {
-    title = 'Join workspace'
+    title = t('Join workspace')
   } else if (workspace.id && !isCreatingAdditionalWorkspace) {
     title = null
   }
@@ -360,8 +366,8 @@ function WorkspaceTab ({ nextStep, setNextStep, isCreatingAdditionalWorkspace })
               value={nextStep || 'workspace'}
               onChange={(e) => setNextStep(e.target.value)}
               options={[
-                { label: userStream.workspaceId ? 'Edit' : 'Create', value: 'workspace' },
-                { label: <Badge color='blue' count={invites.length} offset={[14, -10]}><span className={styles.joinRadioItem}>Join</span></Badge>, value: 'invites' }
+                { label: userStream.workspaceId ? t('Edit') : t('Create'), value: 'workspace' },
+                { label: <Badge color='blue' count={invites.length} offset={[14, -10]}><span className={styles.joinRadioItem}>{t('Join')}</span></Badge>, value: 'invites' }
               ]}
               optionType='button'
               buttonStyle='solid'
@@ -378,12 +384,13 @@ function WorkspaceTab ({ nextStep, setNextStep, isCreatingAdditionalWorkspace })
 
 function getMembersSubTitle (addedUsersCount, planType) {
   if (planType === PlanType.TYPE_TEAM) {
-    return `(${addedUsersCount} of 20)`
+    return t('({count} of 20)', { count: addedUsersCount })
   }
   return ''
 }
 
 export function Workspace ({ nextStep, setNextStep, stepId, isCreatingAdditionalWorkspace }) {
+  const { t } = useI18n()
   const userStream = useSelector(state => state.user.stream)
   const isSelfHosted = useSelector(state => state.user.isSelfHosted)
   const addedUsersCount = useSelector(state => state.workspace.addedUsersCount)
@@ -419,23 +426,23 @@ export function Workspace ({ nextStep, setNextStep, stepId, isCreatingAdditional
                 className={styles.radioCentered}
               >
                 <Radio.Button value='workspace'>
-                  <AppstoreTwoTone /> Workspace
+                  <AppstoreTwoTone /> {t('Workspace')}
                 </Radio.Button>
                 {!isSelfHosted
                   ? (
                     <Radio.Button value='plan' disabled={!userStream.workspaceId}>
-                      <CreditCardOutlined /> Plan
+                      <CreditCardOutlined /> {t('Plan')}
                     </Radio.Button>
                     )
                   : null}
                 <Radio.Button value='members'>
                   <Badge color='blue' count={getMembersSubTitle(addedUsersCount, planType) ? undefined : 0} style={{ display: 'none' }}>
                     {/* keep layout consistent without visible badge when not needed */}
-                    <TeamOutlined /> Members {getMembersSubTitle(addedUsersCount, planType)}
+                    <TeamOutlined /> {t('Members')} {getMembersSubTitle(addedUsersCount, planType)}
                   </Badge>
                 </Radio.Button>
                 <Radio.Button value='tokens'>
-                  <KeyOutlined /> Tokens
+                  <KeyOutlined /> {t('Tokens')}
                 </Radio.Button>
               </Radio.Group>
             </div>
@@ -457,6 +464,7 @@ export function Workspace ({ nextStep, setNextStep, stepId, isCreatingAdditional
 }
 
 function WelcomeScreen ({ setNextStep }) {
+  const { t } = useI18n()
   const history = useHistory()
   const workspace = useSelector(state => state.workspace)
   const invites = workspace.invites
@@ -467,8 +475,8 @@ function WelcomeScreen ({ setNextStep }) {
     <Result
       status='success'
       icon={<span className={styles.rocketIcon} />}
-      title='Start Mapping in Seconds'
-      subTitle='Set up a secure space to connect your data, and share live maps with your team.'
+      title={t('Start Mapping in Seconds')}
+      subTitle={t('Set up a secure space to connect your data, and share live maps with your team.')}
       extra={(
         <>
           <Button
@@ -478,7 +486,7 @@ function WelcomeScreen ({ setNextStep }) {
               history.push('/workspace/create')
             }}
           >
-            Create Workspace
+            {t('Create Workspace')}
           </Button>
           <Button
             key='2'
@@ -487,15 +495,15 @@ function WelcomeScreen ({ setNextStep }) {
               setNextStep('invites')
             }}
           >
-            <Badge color='blue' count={invites.length} offset={[14, -10]}>Join Existing Workspace</Badge>
+            <Badge color='blue' count={invites.length} offset={[14, -10]}>{t('Join Existing Workspace')}</Badge>
           </Button>
           <div className={styles.notSure}>
             <div className={styles.notSureItems}>
-              <div>→ Connect Instantly to BigQuery and Snowflake</div>
-              <div>→ Create Your First Map in 30 Seconds</div>
-              <div>→ No credit card required.</div>
+              <div>{t('→ Connect Instantly to BigQuery and Snowflake')}</div>
+              <div>{t('→ Create Your First Map in 30 Seconds')}</div>
+              <div>{t('→ No credit card required.')}</div>
             </div>
-            <Button ghost type='primary' href='https://dekart.xyz/docs/about/screencast/' target='_blank' onClick={() => track('WatchWalkthrough')}>🎬 Watch a 40-Second Walkthrough</Button>
+            <Button ghost type='primary' href='https://dekart.xyz/docs/about/screencast/' target='_blank' onClick={() => track('WatchWalkthrough')}>{t('🎬 Watch a 40-Second Walkthrough')}</Button>
           </div>
         </>
       )}
@@ -517,6 +525,7 @@ function getWorkspacePageTitle (step) {
 }
 
 export default function WorkspacePage ({ step, onboarding }) {
+  const { t } = useI18n()
   const userStream = useSelector(state => state.user.stream)
   const workspaceId = userStream?.workspaceId
   const initialNextStep = onboarding === 'join' ? 'invites' : onboarding === 'create' ? 'workspace' : null
@@ -554,7 +563,7 @@ export default function WorkspacePage ({ step, onboarding }) {
   return (
     <div className={styles.workspacePage}>
       <Helmet>
-        <title>{getWorkspacePageTitle(step)} — Dekart</title>
+        <title>{t(getWorkspacePageTitle(step))} — Dekart</title>
       </Helmet>
       <Header />
       {userStream

@@ -15,6 +15,7 @@ import { track } from './lib/tracking'
 import { isSystemConnectionID } from './actions/connection'
 import { ConnectionType, QueryExecutionEngine } from 'dekart-proto/dekart_pb'
 import { DUCKDB_DATASOURCE } from './lib/duckdb/constants'
+import { useI18n } from './i18n'
 
 function DatasetSelectorButton ({ icon, title, subtitle, onClick, disable, disabledNote }) {
   return (
@@ -39,6 +40,7 @@ function DatasetSelectorButton ({ icon, title, subtitle, onClick, disable, disab
 }
 
 function DatasetSelector ({ dataset }) {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const env = useSelector(state => state.env)
   const userDefinedConnection = useSelector(state => state.connection.userDefined)
@@ -79,22 +81,22 @@ function DatasetSelector ({ dataset }) {
   const allowFileUpload = ALLOW_FILE_UPLOAD && fileUploadConnection
   let disabledNote = ''
   if (!allowFileUpload) {
-    disabledNote = !ALLOW_FILE_UPLOAD ? 'File upload is disabled in configuration' : 'Add default connection with file upload support'
+    disabledNote = !ALLOW_FILE_UPLOAD ? t('File upload is disabled in configuration') : t('Add default connection with file upload support')
   }
 
   return (
     <div className={styles.datasetSelector}>
       <div className={styles.datasetSelectorInner}>
         {/* REVIEW: Group file actions separately from SQL sources while preserving write-permission gates. */}
-        <section aria-label='File' className={styles.datasetSelectorGroup}>
-          <h2>File</h2>
+        <section aria-label={t('File')} className={styles.datasetSelectorGroup}>
+          <h2>{t('File')}</h2>
           <div className={styles.datasetSelectorOptions}>
             <DatasetSelectorButton
               icon={<UploadOutlined />}
               disable={!(allowFileUpload && report.canWrite) || readOnly}
-              disabledNote={readOnly ? 'Workspace is read-only' : disabledNote}
-              title='Upload File'
-              subtitle='Load files in CSV, GeoJSON, or Parquet formats'
+              disabledNote={readOnly ? t('Workspace is read-only') : disabledNote}
+              title={t('Upload File')}
+              subtitle={t('Load files in CSV, GeoJSON, or Parquet formats')}
               onClick={() => {
                 track('ClickUploadFileOption', { datasetId: dataset.id })
                 dispatch(createFile(dataset.id, fileUploadConnection?.id))
@@ -104,9 +106,9 @@ function DatasetSelector ({ dataset }) {
               <DatasetSelectorButton
                 icon={<ReadOutlined />}
                 disable={!report.canWrite || readOnly}
-                disabledNote={readOnly ? 'Workspace is read-only' : undefined}
-                title='Write README'
-                subtitle='Add Markdown description to your map'
+                disabledNote={readOnly ? t('Workspace is read-only') : undefined}
+                title={t('Write README')}
+                subtitle={t('Add Markdown description to your map')}
                 onClick={() => {
                   track('ClickWriteReadme', { datasetId: dataset.id })
                   dispatch(addReadme(dataset.id))
@@ -115,15 +117,15 @@ function DatasetSelector ({ dataset }) {
             )}
           </div>
         </section>
-        <section aria-label='Query' className={styles.datasetSelectorGroup}>
-          <h2>Query</h2>
+        <section aria-label={t('Query')} className={styles.datasetSelectorGroup}>
+          <h2>{t('Query')}</h2>
           <div className={styles.datasetSelectorOptions}>
             <DatasetSelectorButton
               icon={<DatasourceIcon type={DUCKDB_DATASOURCE} />}
               disable={!report.canWrite || readOnly}
-              disabledNote={readOnly ? 'Workspace is read-only' : undefined}
+              disabledNote={readOnly ? t('Workspace is read-only') : undefined}
               title='DuckDB'
-              subtitle='Transform datasets already in this map'
+              subtitle={t('Transform datasets already in this map')}
               onClick={() => {
                 track('CreateQueryFromConnection', {
                   datasetId: dataset.id,
@@ -137,7 +139,7 @@ function DatasetSelector ({ dataset }) {
               <DatasetSelectorButton
                 key={connection.id}
                 disable={!report.canWrite || readOnly}
-                disabledNote={readOnly ? 'Workspace is read-only' : undefined}
+                disabledNote={readOnly ? t('Workspace is read-only') : undefined}
                 icon={<DatasourceIcon type={connection.connectionType} />}
                 title={`${connection.connectionName}`}
                 subtitle={connection.connectionType === ConnectionType.CONNECTION_TYPE_HTTP
@@ -146,7 +148,7 @@ function DatasetSelector ({ dataset }) {
                       {connection.httpBaseUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                     </span>
                     )
-                  : `Run SQL directly on ${getDatasourceMeta(connection.connectionType).name}`}
+                  : t('Run SQL directly on {name}', { name: getDatasourceMeta(connection.connectionType).name })}
                 onClick={() => {
                   track('CreateQueryFromConnection', {
                     datasetId: dataset.id,
@@ -171,14 +173,14 @@ function DatasetSelector ({ dataset }) {
           className={styles.manageConnections}
           icon={<PlusOutlined />}
           disabled={readOnly}
-          title={readOnly ? 'Workspace is read-only' : undefined}
+          title={readOnly ? t('Workspace is read-only') : undefined}
           onClick={() => {
             dispatch(updateSessionStorage('redirectWhenSaveConnection', { reportId: report.id, edit: true }))
             track('AddAndEditConnections')
             history.push('/connections')
           }}
         >
-          Add and edit connections
+          {t('Add and edit connections')}
         </Button>
       )}
     </div>

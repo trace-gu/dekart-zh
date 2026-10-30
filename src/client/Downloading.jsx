@@ -6,13 +6,16 @@ import Button from 'antd/es/button'
 import styles from './Downloading.module.css'
 import Modal from 'antd/es/modal'
 import { addDatasetToMap, cancelDownloading, processDownloadError } from './actions/dataset'
+import { useI18n } from './i18n'
 
 function CancelDownloadingButton () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
-  return <Button className={styles.cancel} onClick={() => dispatch(cancelDownloading())} size='small'>Cancel</Button>
+  return <Button className={styles.cancel} onClick={() => dispatch(cancelDownloading())} size='small'>{t('Cancel')}</Button>
 }
 
 function DownloadingMessage () {
+  const { t } = useI18n()
   const downloading = useSelector(state => state.dataset.downloading)
   const files = useSelector(state => state.files)
   const hash = useSelector(state => state.queryParams.hash)
@@ -30,11 +33,11 @@ function DownloadingMessage () {
   }, 0)
   const loaded = downloading.reduce((l, { loaded }) => l + loaded, 0)
   return (
-    <span>Downloading Map Data {(() => {
+    <span>{t('Downloading Map Data')} {(() => {
       if (size > 0) {
-        return `(${prettyBites(loaded)} of ${prettyBites(size)})`
+        return t('({loaded} of {total})', { loaded: prettyBites(loaded), total: prettyBites(size) })
       } else if (loaded > 0) {
-        return `(${prettyBites(loaded)})`
+        return t('({loaded})', { loaded: prettyBites(loaded) })
       }
       return ''
     })()}  <CancelDownloadingButton />
@@ -44,6 +47,7 @@ function DownloadingMessage () {
 
 let closeMessage = null
 export default function Downloading () {
+  const { t } = useI18n()
   const [maxDatasetSize, setMaxDatasetSize] = useState(150 * 1024 * 1024)
   const downloading = useSelector(state => state.dataset.downloading)
   const downloaded = downloading.filter(d => d.res && !d.addingToMap)
@@ -93,8 +97,8 @@ export default function Downloading () {
     if (pendingConfirmation) {
       const { dataset, res, extension, loaded, prevDatasetsList, label, sourceId, controller } = pendingConfirmation
       mdl.confirm({
-        title: `${label} result is larger than ${prettyBites(maxDatasetSize)}`,
-        content: `Dataset size is ${prettyBites(loaded)}. Loading this dataset may slow down your browser. Continue?`,
+        title: t('{label} result is larger than {size}', { label, size: prettyBites(maxDatasetSize) }),
+        content: t('Dataset size is {size}. Loading this dataset may slow down your browser. Continue?', { size: prettyBites(loaded) }),
         onOk: () => {
           dispatch(addDatasetToMap(dataset, prevDatasetsList, res, extension, sourceId, controller))
           setMaxDatasetSize(Math.round(loaded * 1.2)) // do not ask for same size again

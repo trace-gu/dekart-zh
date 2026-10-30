@@ -7,6 +7,7 @@ import styles from './OtherConnectorModal.module.css'
 import { track } from './lib/tracking'
 import { useDispatch, useSelector } from 'react-redux'
 import { success } from './actions/message'
+import { useI18n } from './i18n'
 
 const REQUESTED_CONNECTORS_KEY = 'requestedOtherConnectors'
 const CALENDLY_URL = 'https://calendly.com/vladi-dekart/meet-vladi'
@@ -47,6 +48,7 @@ function safeRequestedConnectorsWrite (requestedMap) {
 }
 
 export default function OtherConnectorModal ({ open, onClose }) {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const workspaceId = useSelector(state => state.user.stream?.workspaceId || '')
   const [step, setStep] = useState('pickConnector')
@@ -56,10 +58,10 @@ export default function OtherConnectorModal ({ open, onClose }) {
     return OTHER_CONNECTOR_OPTIONS.find(option => option.value === selectedConnector)?.label || selectedConnector
   }, [selectedConnector])
   const isCustom = selectedConnector === 'other'
-  const requestedConnectorName = isCustom ? (customName.trim() || 'this connector') : connectorLabel
+  const requestedConnectorName = isCustom ? (customName.trim() || t('this connector')) : connectorLabel
   const confirmTitle = isCustom
-    ? `Thanks, ${requestedConnectorName} is on our roadmap`
-    : `${connectorLabel} is in our pilot list`
+    ? t('Thanks, {connector} is on our roadmap', { connector: requestedConnectorName })
+    : t('{connector} is in our pilot list', { connector: connectorLabel })
 
   useEffect(() => {
     if (open) {
@@ -112,7 +114,7 @@ export default function OtherConnectorModal ({ open, onClose }) {
       connector: selectedConnector,
       custom: isCustom
     })
-    dispatch(success(`Got it. We'll email you when ${notifyLabel} is ready.`))
+    dispatch(success(t("Got it. We'll email you when {connector} is ready.", { connector: notifyLabel })))
     onClose()
   }
 
@@ -126,7 +128,7 @@ export default function OtherConnectorModal ({ open, onClose }) {
 
   return (
     <Modal
-      title={step === 'pickConnector' ? 'Which database do you use?' : confirmTitle}
+      title={step === 'pickConnector' ? t('Which database do you use?') : confirmTitle}
       open={open}
       onCancel={closeModal}
       footer={null}
@@ -138,11 +140,11 @@ export default function OtherConnectorModal ({ open, onClose }) {
           ? (
             <>
               <p className={styles.subtitle}>
-                Pick the one you&apos;d connect to Dekart. We&apos;re piloting new connectors with a small group of teams.
+                {t("Pick the one you'd connect to Dekart. We're piloting new connectors with a small group of teams.")}
               </p>
               <Select
                 showSearch
-                placeholder='Search and pick a connector'
+                placeholder={t('Search and pick a connector')}
                 value={selectedConnector || undefined}
                 onChange={setSelectedConnector}
                 options={OTHER_CONNECTOR_OPTIONS}
@@ -153,15 +155,15 @@ export default function OtherConnectorModal ({ open, onClose }) {
                 ? (
                   <Input
                     className={styles.customInput}
-                    placeholder='Enter connector name'
+                    placeholder={t('Enter connector name')}
                     value={customName}
                     onChange={(event) => setCustomName(event.target.value)}
                   />
                   )
                 : null}
               <div className={styles.actions}>
-                <Button onClick={closeModal}>Cancel</Button>
-                <Button type='primary' disabled={!canProceed} onClick={onNext}>Next</Button>
+                <Button onClick={closeModal}>{t('Cancel')}</Button>
+                <Button type='primary' disabled={!canProceed} onClick={onNext}>{t('Next')}</Button>
               </div>
             </>
             )
@@ -169,17 +171,17 @@ export default function OtherConnectorModal ({ open, onClose }) {
             <>
               <p>
                 {isCustom
-                  ? <>Thanks for sharing. We&apos;ll notify you when {requestedConnectorName} is available for your workspace.</>
-                  : <>We&apos;re rolling new connectors out to a small group of workspaces first. We&apos;ll notify you when {connectorLabel} is available for yours.</>}
+                  ? <>{t("Thanks for sharing. We'll notify you when {connector} is available for your workspace.", { connector: requestedConnectorName })}</>
+                  : <>{t("We're rolling new connectors out to a small group of workspaces first. We'll notify you when {connector} is available for yours.", { connector: connectorLabel })}</>}
               </p>
               <p className={styles.hint}>
                 {isCustom
-                  ? <>Need it sooner? Book a call and share your use case so we can prioritise it.</>
-                  : <>Want it sooner? Book a call and we can prioritise your workspace for the next batch.</>}
+                  ? <>{t('Need it sooner? Book a call and share your use case so we can prioritise it.')}</>
+                  : <>{t('Want it sooner? Book a call and we can prioritise your workspace for the next batch.')}</>}
               </p>
               <div className={styles.actions}>
-                <Button type='primary' onClick={onBookCall}>Book a call</Button>
-                <Button onClick={onNotify}>Notify me</Button>
+                <Button type='primary' onClick={onBookCall}>{t('Book a call')}</Button>
+                <Button onClick={onNotify}>{t('Notify me')}</Button>
               </div>
             </>
             )}

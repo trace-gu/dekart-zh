@@ -16,12 +16,14 @@ import { ConnectionType } from 'dekart-proto/dekart_pb'
 import { DatasourceIcon } from './Datasource'
 import { track } from './lib/tracking'
 import TextArea from 'antd/es/input/TextArea'
+import { useI18n } from './i18n'
 
 function connectionTestFieldsChanged (changedValues, fields) {
   return fields.some(field => Object.prototype.hasOwnProperty.call(changedValues, field))
 }
 
 function Footer ({ form, saveWithoutTest = false, testDisabled = false, archiveBeforeSave = false, primaryTest = true }) {
+  const { t } = useI18n()
   const { dialog, test } = useSelector(state => state.connection)
   const { tested, testing, error: testError, success: testSuccess } = test
   const { id, loading, connectionType } = dialog
@@ -48,7 +50,7 @@ function Footer ({ form, saveWithoutTest = false, testDisabled = false, archiveB
         form.resetFields()
       }}
     >
-      Save
+      {t('Save')}
     </Button>
   )
   const archiveButton = (
@@ -60,7 +62,7 @@ function Footer ({ form, saveWithoutTest = false, testDisabled = false, archiveB
         dispatch(archiveConnection(id))
       }}
     >
-      Archive
+      {t('Archive')}
     </Button>
   )
 
@@ -73,11 +75,11 @@ function Footer ({ form, saveWithoutTest = false, testDisabled = false, archiveB
           dispatch(testConnection(connectionType, form.getFieldsValue()))
         }}
       >
-        Test Connection
+        {t('Test Connection')}
       </Button>
       {
         tested
-          ? <div className={styles.testStatus}>{testError ? <Tooltip title={testError}><ExclamationCircleTwoTone twoToneColor='#f5222d' /></Tooltip> : <CheckCircleTwoTone twoToneColor='#52c41a' />}</div>
+          ? <div className={styles.testStatus}>{testError ? <Tooltip title={t(testError)}><ExclamationCircleTwoTone twoToneColor='#f5222d' /></Tooltip> : <CheckCircleTwoTone twoToneColor='#52c41a' />}</div>
           : null
       }
       <div className={styles.spacer} />
@@ -88,6 +90,7 @@ function Footer ({ form, saveWithoutTest = false, testDisabled = false, archiveB
 }
 
 function WherobotsConnectionModal ({ form }) {
+  const { t } = useI18n()
   const { dialog } = useSelector(state => state.connection)
   const { id, loading } = dialog
   const dispatch = useDispatch()
@@ -127,14 +130,14 @@ function WherobotsConnectionModal ({ form }) {
             }
           }}
         >
-          {datasetUsed ? <div className={styles.datasetsCountAlert}><Alert message={<>This connection is used in {connection.datasetCount} dataset{connection.datasetCount > 1 ? 's' : ''}.</>} description='Changing make cause report errors' type='warning' /></div> : null}
-          <Form.Item required label='Connection Name' name='connectionName'>
+          {datasetUsed ? <div className={styles.datasetsCountAlert}><Alert message={t(connection.datasetCount > 1 ? 'This connection is used in {count} datasets.' : 'This connection is used in {count} dataset.', { count: connection.datasetCount })} description={t('Changing make cause report errors')} type='warning' /></div> : null}
+          <Form.Item required label={t('Connection Name')} name='connectionName'>
             <Input defaultValue='Wherobots' />
           </Form.Item>
-          <Form.Item required label='Host' name='wherobotsHost'>
+          <Form.Item required label={t('Host')} name='wherobotsHost'>
             <Input />
           </Form.Item>
-          <Form.Item required label='API Key' name='wherobotsKey' extra={<>The <a target='_blank' href='https://cloud.wherobots.com/organization/security' rel='noreferrer'>API key</a> for the user that you use to connect to the database.</>}>
+          <Form.Item required label={t('API Key')} name='wherobotsKey' extra={<>{t('The')} <a target='_blank' href='https://cloud.wherobots.com/organization/security' rel='noreferrer'>{t('API key')}</a>{t(' for the user that you use to connect to the database.')}</>}>
             <Input.Password
               visibilityToggle={apiKeyChanged} onFocus={() => {
                 if (!apiKeyChanged) {
@@ -147,7 +150,7 @@ function WherobotsConnectionModal ({ form }) {
               }}
             />
           </Form.Item>
-          <Form.Item required label='Runtime' name='wherobotsRuntime'>
+          <Form.Item required label={t('Runtime')} name='wherobotsRuntime'>
             <AutoComplete
               options={wherobotsHint.runtimes}
               showArrow
@@ -155,7 +158,7 @@ function WherobotsConnectionModal ({ form }) {
               filterOption={(inputValue, option) => option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1}
             />
           </Form.Item>
-          <Form.Item required label='Region' name='wherobotsRegion'>
+          <Form.Item required label={t('Region')} name='wherobotsRegion'>
             <AutoComplete
               options={wherobotsHint.regions}
               showArrow
@@ -170,6 +173,7 @@ function WherobotsConnectionModal ({ form }) {
 }
 
 function SnowflakeConnectionModal ({ form }) {
+  const { t } = useI18n()
   const { dialog } = useSelector(state => state.connection)
   const { id, loading } = dialog
   const dispatch = useDispatch()
@@ -210,21 +214,21 @@ function SnowflakeConnectionModal ({ form }) {
             }
           }}
         >
-          {datasetUsed ? <div className={styles.datasetsCountAlert}><Alert message={<>This connection is used in {connection.datasetCount} dataset{connection.datasetCount > 1 ? 's' : ''}.</>} description='Changing may cause map errors' type='warning' /></div> : null}
-          <Form.Item label='Connection Name' name='connectionName'>
+          {datasetUsed ? <div className={styles.datasetsCountAlert}><Alert message={t(connection.datasetCount > 1 ? 'This connection is used in {count} datasets.' : 'This connection is used in {count} dataset.', { count: connection.datasetCount })} description={t('Changing may cause map errors')} type='warning' /></div> : null}
+          <Form.Item label={t('Connection Name')} name='connectionName'>
             <Input placeholder='Snowflake' />
           </Form.Item>
           <Form.Item
-            required label='Snowflake Account ID' name='snowflakeAccountId' extra={
-              <><a href='https://docs.snowflake.com/en/user-guide/admin-account-identifier#using-an-account-name-as-an-identifier' target='_blank' rel='noreferrer'>Snowflake Account Identifier</a> that your Snowflake cluster is running.</>
+            required label={t('Snowflake Account ID')} name='snowflakeAccountId' extra={
+              <><a href='https://docs.snowflake.com/en/user-guide/admin-account-identifier#using-an-account-name-as-an-identifier' target='_blank' rel='noreferrer'>{t('Snowflake Account Identifier')}</a>{t(' that your Snowflake cluster is running.')}</>
             }
           >
             <Input placeholder='ORGNAME-ACCOUNT_NAME' />
           </Form.Item>
-          <Form.Item required label='Snowflake Username' name='snowflakeUsername' extra='The database username for the account that you want to use to connect to your database.'>
+          <Form.Item required label={t('Snowflake Username')} name='snowflakeUsername' extra={t('The database username for the account that you want to use to connect to your database.')}>
             <Input placeholder='USERNAME' />
           </Form.Item>
-          <Form.Item required label='Snowflake Private Key' name='snowflakeKey' extra={<>The <a target='_blank' href='https://dekart.xyz/docs/usage/snowflake-private-key/' rel='noreferrer'>private key</a> required for authenticating with Snowflake.</>}>
+          <Form.Item required label={t('Snowflake Private Key')} name='snowflakeKey' extra={<>{t('The')} <a target='_blank' href='https://dekart.xyz/docs/usage/snowflake-private-key/' rel='noreferrer'>{t('private key')}</a>{t(' required for authenticating with Snowflake.')}</>}>
             <Input.Password
               placeholder='MIIEv..' visibilityToggle={keyChanged} onFocus={() => {
                 if (!keyChanged) {
@@ -237,7 +241,7 @@ function SnowflakeConnectionModal ({ form }) {
               }}
             />
           </Form.Item>
-          <Form.Item label='Snowflake Warehouse' name='snowflakeWarehouse' extra='Optional: Snowflake warehouse. If the user lacks a default warehouse, you’ll need to enter the warehouse to connect to.'>
+          <Form.Item label={t('Snowflake Warehouse')} name='snowflakeWarehouse' extra={t('Optional: Snowflake warehouse. If the user lacks a default warehouse, you’ll need to enter the warehouse to connect to.')}>
             <Input />
           </Form.Item>
         </Form>
@@ -247,6 +251,7 @@ function SnowflakeConnectionModal ({ form }) {
 }
 
 function PostgresConnectionModal ({ form }) {
+  const { t } = useI18n()
   const { dialog } = useSelector(state => state.connection)
   const { id, loading } = dialog
   const isCloud = useSelector(state => state.env.isCloud)
@@ -269,10 +274,10 @@ function PostgresConnectionModal ({ form }) {
     postgresSslMode !== connection?.postgresSslMode
   const passwordRequiredForTest = Boolean(connection && connectionNeedsTest && !passwordChanged)
   const sslModeOptions = isCloud
-    ? [{ value: 'require', label: 'Require SSL' }]
+    ? [{ value: 'require', label: t('Require SSL') }]
     : [
-        { value: 'disable', label: 'Disable SSL' },
-        { value: 'require', label: 'Require SSL' }
+        { value: 'disable', label: t('Disable SSL') },
+        { value: 'require', label: t('Require SSL') }
       ]
 
   useEffect(() => {
@@ -305,23 +310,23 @@ function PostgresConnectionModal ({ form }) {
             }
           }}
         >
-          {datasetUsed ? <div className={styles.datasetsCountAlert}><Alert showIcon message={<>Used in {connection.datasetCount} dataset{connection.datasetCount > 1 ? 's' : ''} - changing this connection may cause map errors.</>} type='warning' /></div> : null}
-          <Form.Item required label='Connection name' name='connectionName'>
+          {datasetUsed ? <div className={styles.datasetsCountAlert}><Alert showIcon message={t(connection.datasetCount > 1 ? 'Used in {count} datasets - changing this connection may cause map errors.' : 'Used in {count} dataset - changing this connection may cause map errors.', { count: connection.datasetCount })} type='warning' /></div> : null}
+          <Form.Item required label={t('Connection name')} name='connectionName'>
             <Input placeholder='Postgres' />
           </Form.Item>
           <div className={styles.postgresFieldRow}>
-            <Form.Item required label='Server' name='postgresHost' className={styles.postgresFieldWide}>
+            <Form.Item required label={t('Server')} name='postgresHost' className={styles.postgresFieldWide}>
               <Input placeholder='db.example.com' />
             </Form.Item>
-            <Form.Item required label='Port' name='postgresPort' className={styles.postgresFieldNarrow}>
+            <Form.Item required label={t('Port')} name='postgresPort' className={styles.postgresFieldNarrow}>
               <Input type='number' placeholder='5432' />
             </Form.Item>
           </div>
           <div className={styles.postgresFieldRow}>
-            <Form.Item required label='Username' name='postgresUsername' className={styles.postgresFieldWide}>
+            <Form.Item required label={t('Username')} name='postgresUsername' className={styles.postgresFieldWide}>
               <Input placeholder='postgres' />
             </Form.Item>
-            <Form.Item required label='Password' name='postgresPassword' extra={passwordRequiredForTest ? 'Enter the password again to test connection changes.' : null} className={styles.postgresFieldNarrow}>
+            <Form.Item required label={t('Password')} name='postgresPassword' extra={passwordRequiredForTest ? t('Enter the password again to test connection changes.') : null} className={styles.postgresFieldNarrow}>
               <Input.Password
                 placeholder='••••••••'
                 visibilityToggle={passwordChanged}
@@ -338,16 +343,16 @@ function PostgresConnectionModal ({ form }) {
               />
             </Form.Item>
           </div>
-          <Form.Item required label='Database' name='postgresDatabase' extra='Database your connection will use.'>
+          <Form.Item required label={t('Database')} name='postgresDatabase' extra={t('Database your connection will use.')}>
             <Input placeholder='postgres' />
           </Form.Item>
-          <Form.Item required={isCloud} label='SSL mode' name='postgresSslMode' extra={isCloud ? <><LockOutlined /> Required on Dekart Cloud. Outbound connections must be encrypted.</> : "Optional for self-hosted Dekart. Match your server's SSL configuration."}>
+          <Form.Item required={isCloud} label={t('SSL mode')} name='postgresSslMode' extra={isCloud ? <><LockOutlined /> {t('Required on Dekart Cloud. Outbound connections must be encrypted.')}</> : t("Optional for self-hosted Dekart. Match your server's SSL configuration.")}>
             <Select options={sslModeOptions} disabled={isCloud} />
           </Form.Item>
           {isCloud
             ? (
               <div className={styles.postgresSetupHint}>
-                <InfoCircleOutlined /> Allowlist Dekart Cloud egress IPs and use a read-only database user. <a href='https://dekart.xyz/docs/usage/postgres-connection/' target='_blank' rel='noreferrer'>Setup instructions</a>
+                <InfoCircleOutlined /> {t('Allowlist Dekart Cloud egress IPs and use a read-only database user.')} <a href='https://dekart.xyz/docs/usage/postgres-connection/' target='_blank' rel='noreferrer'>{t('Setup instructions')}</a>
               </div>
               )
             : null}
@@ -357,6 +362,7 @@ function PostgresConnectionModal ({ form }) {
   )
 }
 function BigQueryServiceAccountConnectionModal ({ form }) {
+  const { t } = useI18n()
   const { dialog, projects } = useSelector(state => state.connection)
   const { id, loading } = dialog
   const dispatch = useDispatch()
@@ -380,7 +386,7 @@ function BigQueryServiceAccountConnectionModal ({ form }) {
   return (
     <Modal
       open
-      title={<><DatasourceIcon type={ConnectionType.CONNECTION_TYPE_BIGQUERY} /> BigQuery Service Account</>}
+      title={<><DatasourceIcon type={ConnectionType.CONNECTION_TYPE_BIGQUERY} /> {t('BigQuery Service Account')}</>}
       onCancel={() => dispatch(closeConnectionDialog())}
       footer={<Footer form={form} saveWithoutTest={!form.getFieldValue('newBigqueryKey')} testDisabled={!form.getFieldValue('newBigqueryKey')} />}
     >
@@ -397,16 +403,16 @@ function BigQueryServiceAccountConnectionModal ({ form }) {
             }
           }}
         >
-          {nameChangeOnly ? <div className={styles.datasetsCountAlert}><Alert message={<>This connection is used in {connection.datasetCount} dataset{connection.datasetCount > 1 ? 's' : ''}.</>} description='Bucket name cannot be changed' type='warning' /></div> : null}
-          <Form.Item label='Connection Name' name='connectionName'>
+          {nameChangeOnly ? <div className={styles.datasetsCountAlert}><Alert message={t(connection.datasetCount > 1 ? 'This connection is used in {count} datasets.' : 'This connection is used in {count} dataset.', { count: connection.datasetCount })} description={t('Bucket name cannot be changed')} type='warning' /></div> : null}
+          <Form.Item label={t('Connection Name')} name='connectionName'>
             <Input placeholder='BigQuery' />
           </Form.Item>
           <Form.Item
-            required label='Service Account JSON Key' name='newBigqueryKey' extra={
+            required label={t('Service Account JSON Key')} name='newBigqueryKey' extra={
               !showKey
                 ? (
                   <>
-                    Keys are encrypted and cannot be displayed.
+                    {t('Keys are encrypted and cannot be displayed.')}
                     <Button
                       type='link'
                       size='small'
@@ -415,13 +421,13 @@ function BigQueryServiceAccountConnectionModal ({ form }) {
                         setShowKey(true)
                       }}
                     >
-                      Enter new value
+                      {t('Enter new value')}
                     </Button>
                   </>
                   )
                 : (
                   <>
-                    Paste the JSON key for the service account you want to use to connect to BigQuery. <a href='https://dekart.xyz/docs/usage/choose-bigquery-connection-method/#how-to-get-a-service-account-key' target='_blank' rel='noreferrer'>Read Documentation</a>
+                    {t('Paste the JSON key for the service account you want to use to connect to BigQuery.')} <a href='https://dekart.xyz/docs/usage/choose-bigquery-connection-method/#how-to-get-a-service-account-key' target='_blank' rel='noreferrer'>{t('Read Documentation')}</a>
                   </>
                   )
             }
@@ -432,7 +438,7 @@ function BigQueryServiceAccountConnectionModal ({ form }) {
               placeholder=''
             />
           </Form.Item>
-          <Form.Item label='Optional: Storage Bucket' extra={<>Google Cloud Storage bucket to permanently cache query results. Required to share map with other users.</>} name='cloudStorageBucket'>
+          <Form.Item label={t('Optional: Storage Bucket')} extra={<>{t('Google Cloud Storage bucket to permanently cache query results. Required to share map with other users.')}</>} name='cloudStorageBucket'>
             <Input placeholder='my-gcs-bucket' disabled={nameChangeOnly} />
           </Form.Item>
         </Form>
@@ -442,6 +448,7 @@ function BigQueryServiceAccountConnectionModal ({ form }) {
 }
 
 function BigQueryConnectionModal ({ form }) {
+  const { t } = useI18n()
   const { dialog, projects } = useSelector(state => state.connection)
   const { id, loading } = dialog
   const dispatch = useDispatch()
@@ -499,14 +506,14 @@ function BigQueryConnectionModal ({ form }) {
             }
           }}
         >
-          {nameChangeOnly ? <div className={styles.datasetsCountAlert}><Alert message={<>This connection is used in {connection.datasetCount} dataset{connection.datasetCount > 1 ? 's' : ''}.</>} description='Only the name can be changed.' type='warning' /></div> : null}
-          <Form.Item label='Connection Name' name='connectionName'>
+          {nameChangeOnly ? <div className={styles.datasetsCountAlert}><Alert message={t(connection.datasetCount > 1 ? 'This connection is used in {count} datasets.' : 'This connection is used in {count} dataset.', { count: connection.datasetCount })} description={t('Only the name can be changed.')} type='warning' /></div> : null}
+          <Form.Item label={t('Connection Name')} name='connectionName'>
             <Input />
           </Form.Item>
           <Form.Item
-            label='Project ID' extra={(() => {
+            label={t('Project ID')} extra={(() => {
               if (projects) {
-                return projects.length ? 'Click to select you BigQuery project ID' : <>→ <a target='_blank' href='https://dekart.xyz/docs/configuration/environment-variables/?ref=no-gcp-project#user-authorization-via-google-oauth-20-flow' rel='noreferrer'>Ensure your account has access to the Google Cloud Project</a></>
+                return projects.length ? t('Click to select you BigQuery project ID') : <>→ <a target='_blank' href='https://dekart.xyz/docs/configuration/environment-variables/?ref=no-gcp-project#user-authorization-via-google-oauth-20-flow' rel='noreferrer'>{t('Ensure your account has access to the Google Cloud Project')}</a></>
               }
               return <LoadingOutlined />
             })()} required name='bigqueryProjectId'
@@ -519,7 +526,7 @@ function BigQueryConnectionModal ({ form }) {
               filterOption={(inputValue, option) => option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1}
             />
           </Form.Item>
-          <Form.Item label='Optional: Storage Bucket' extra={<>Google Cloud Storage bucket to permanently cache query results. Required to share map with other users.</>} name='cloudStorageBucket'>
+          <Form.Item label={t('Optional: Storage Bucket')} extra={<>{t('Google Cloud Storage bucket to permanently cache query results. Required to share map with other users.')}</>} name='cloudStorageBucket'>
             <Input placeholder='my-gcs-bucket' disabled={nameChangeOnly} />
           </Form.Item>
         </Form>

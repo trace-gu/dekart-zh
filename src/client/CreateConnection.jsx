@@ -11,6 +11,7 @@ import { newConnection, newConnectionScreen } from './actions/connection'
 import BigQueryConnectionTypeSelectorModal from './BigQueryConnectionTypeSelectorModal'
 import OtherConnectorModal, { OTHER_CONNECTOR_OPTIONS } from './OtherConnectorModal'
 import styles from './CreateConnection.module.css'
+import { useI18n } from './i18n'
 
 const moreWarehouseHint = ['databricks', 'redshift']
   .map(value => OTHER_CONNECTOR_OPTIONS.find(option => option.value === value)?.label.split('/')[0].trim())
@@ -19,6 +20,7 @@ const moreWarehouseHint = ['databricks', 'redshift']
 
 // Keep the return action above setup options so it is visible before scrolling.
 function ConnectionTypeSelectorBack () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const showCancel = useSelector(state => state.connection.list).length > 0
   const newScreen = useSelector(state => state.connection.screen)
@@ -39,7 +41,7 @@ function ConnectionTypeSelectorBack () {
               history.push('/')
             }
           }}
-        >Back
+        >{t('Back')}
         </Button>
       </div>
       )
@@ -47,6 +49,7 @@ function ConnectionTypeSelectorBack () {
 }
 
 function ConnectionTypeSelectorBottom ({ onMoreWarehouses }) {
+  const { t } = useI18n()
   const planType = useSelector(state => state.user.stream.planType)
   const showCancel = useSelector(state => state.connection.list).length > 0
   const newScreen = useSelector(state => state.connection.screen)
@@ -64,14 +67,14 @@ function ConnectionTypeSelectorBottom ({ onMoreWarehouses }) {
           className={styles.moreWarehousesButton}
           style={{ borderStyle: 'dashed' }}
         >
-          <span className={styles.moreWarehousesPrimary}>More warehouses</span>
-          <span className={styles.moreWarehousesHint}>{moreWarehouseHint} &amp; more</span>
+          <span className={styles.moreWarehousesPrimary}>{t('More warehouses')}</span>
+          <span className={styles.moreWarehousesHint}>{t('{names} & more', { names: moreWarehouseHint })}</span>
         </Button>
         {planType === PlanType.TYPE_PERSONAL && !showBack
           ? (
             <div className={styles.notSure}>
-              <p>or</p>
-              <Button ghost type='primary' href='https://dekart.xyz/self-hosted/?ref=ConnectionTypeSelector' target='_blank' onClick={() => track('GetStartedWithSelfHosting')}>Get Started with Self-Hosting</Button>
+              <p>{t('or')}</p>
+              <Button ghost type='primary' href='https://dekart.xyz/self-hosted/?ref=ConnectionTypeSelector' target='_blank' onClick={() => track('GetStartedWithSelfHosting')}>{t('Get Started with Self-Hosting')}</Button>
             </div>
             )
           : null}
@@ -84,8 +87,8 @@ function ConnectionTypeSelectorBottom ({ onMoreWarehouses }) {
   if (planType === PlanType.TYPE_PERSONAL) {
     return (
       <div className={styles.notSure}>
-        <p>or</p>
-        <Button ghost type='primary' href='https://dekart.xyz/self-hosted/?ref=ConnectionTypeSelector' target='_blank' onClick={() => track('GetStartedWithSelfHosting')}>Get Started with Self-Hosting</Button>
+        <p>{t('or')}</p>
+        <Button ghost type='primary' href='https://dekart.xyz/self-hosted/?ref=ConnectionTypeSelector' target='_blank' onClick={() => track('GetStartedWithSelfHosting')}>{t('Get Started with Self-Hosting')}</Button>
       </div>
     )
   }
@@ -94,6 +97,7 @@ function ConnectionTypeSelectorBottom ({ onMoreWarehouses }) {
 
 // Render the connection options and route users to the selected connector setup.
 function ConnectionTypeSelector () {
+  const { t } = useI18n()
   const dispatch = useDispatch()
   const [bigqueryModalOpen, setBigqueryModalOpen] = useState(false)
   const [otherModalOpen, setOtherModalOpen] = useState(false)
@@ -163,7 +167,7 @@ function ConnectionTypeSelector () {
         <OtherConnectorModal open={otherModalOpen} onClose={() => setOtherModalOpen(false)} />
         {connectionGroups.map(group => (
           <section key={group.title} className={styles.connectionGroup}>
-            <h2>{group.title}</h2>
+            <h2>{t(group.title)}</h2>
             <div className={styles.connectionGrid}>
               {group.cards.map(card => (
                 <button
@@ -175,11 +179,11 @@ function ConnectionTypeSelector () {
                 >
                   <div className={styles.connectionTypeCardHeader}>
                     <div className={styles.connectionTypeCardIcon}>{card.icon}</div>
-                    <div className={styles.connectionTypeCardTitle}>{card.title}</div>
+                    <div className={styles.connectionTypeCardTitle}>{t(card.title)}</div>
                   </div>
-                  <div className={styles.connectionTypeCardSubtitle}>{card.subtitle}</div>
+                  <div className={styles.connectionTypeCardSubtitle}>{card.subtitle ? t(card.subtitle) : null}</div>
                   <div className={styles.connectionTypeCardCta}>
-                    <span className={styles.connectionTypeCardCtaLabel}>Connect</span>
+                    <span className={styles.connectionTypeCardCtaLabel}>{t('Connect')}</span>
                   </div>
                 </button>
               ))}
@@ -193,6 +197,7 @@ function ConnectionTypeSelector () {
 }
 
 export default function CreateConnection () {
+  const { t } = useI18n()
   return (
     <div className={styles.createConnection}>
       <ConnectionTypeSelectorBack />
@@ -200,7 +205,7 @@ export default function CreateConnection () {
         className={styles.intro}
         status='success'
         icon={<ApiTwoTone />}
-        title='Connect your data'
+        title={t('Connect your data')}
       />
       <ConnectionTypeSelector />
     </div>

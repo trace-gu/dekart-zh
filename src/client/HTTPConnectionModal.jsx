@@ -8,9 +8,11 @@ import Modal from 'antd/es/modal'
 import Button from 'antd/es/button'
 import Space from 'antd/es/space'
 import { archiveConnection, closeConnectionDialog, saveConnection } from './actions/connection'
+import { useI18n } from './i18n'
 
 // Header rows exist only during creation; saved credentials remain on the server.
 export default function HTTPConnectionModal ({ form }) {
+  const { t } = useI18n()
   const { id, loading } = useSelector(state => state.connection.dialog)
   const isAdmin = useSelector(state => state.user.isAdmin)
   const dispatch = useDispatch()
@@ -25,14 +27,14 @@ export default function HTTPConnectionModal ({ form }) {
   return (
     <Modal
       open
-      title='HTTP source'
+      title={t('HTTP source')}
       onCancel={() => dispatch(closeConnectionDialog())}
       footer={[
         <Button
           key='archive'
           disabled={!id || !isAdmin || loading}
           onClick={() => dispatch(archiveConnection(id))}
-        >Archive
+        >{t('Archive')}
         </Button>,
         <Button
           key='save'
@@ -41,28 +43,28 @@ export default function HTTPConnectionModal ({ form }) {
           disabled={!isAdmin || loading}
           loading={loading}
           onClick={() => form.submit()}
-        >Save
+        >{t('Save')}
         </Button>
       ]}
     >
-      <p>Shared with your workspace like a warehouse connection. Reports that use it publish a copy of the fetched data.</p>
+      <p>{t('Shared with your workspace like a warehouse connection. Reports that use it publish a copy of the fetched data.')}</p>
       <Form
         form={form}
         layout='vertical'
         disabled={!isAdmin || loading}
         onFinish={values => dispatch(saveConnection(id, ConnectionType.CONNECTION_TYPE_HTTP, values))}
       >
-        <Form.Item label='Connection name' name='connectionName' rules={[{ required: true }]}>
+        <Form.Item label={t('Connection name')} name='connectionName' rules={[{ required: true }]}>
           <Input />
         </Form.Item>
-        <Form.Item label='Base URL' name='httpBaseUrl' rules={[{ required: true }]}>
+        <Form.Item label={t('Base URL')} name='httpBaseUrl' rules={[{ required: true }]}>
           <Input placeholder='https://api.example.com/data/' />
         </Form.Item>
-        <Form.Item label='Docs URL' name='httpDocsUrl'>
+        <Form.Item label={t('Docs URL')} name='httpDocsUrl'>
           <Input placeholder='https://example.com/docs' />
         </Form.Item>
         {id
-          ? <p>Headers are hidden and cannot be edited after saving.</p>
+          ? <p>{t('Headers are hidden and cannot be edited after saving.')}</p>
           : (
             <Form.List name='httpHeaderRows'>
               {(fields, { add, remove }) => (
@@ -70,15 +72,15 @@ export default function HTTPConnectionModal ({ form }) {
                   {fields.map(field => (
                     <Space key={field.key} align='baseline'>
                       <Form.Item name={[field.name, 'name']} rules={[{ required: true }]}>
-                        <Input placeholder='Header name' />
+                        <Input placeholder={t('Header name')} />
                       </Form.Item>
                       <Form.Item name={[field.name, 'value']} rules={[{ required: true }]}>
-                        <Input.Password placeholder='Header value' />
+                        <Input.Password placeholder={t('Header value')} />
                       </Form.Item>
-                      <Button onClick={() => remove(field.name)}>Remove</Button>
+                      <Button onClick={() => remove(field.name)}>{t('Remove')}</Button>
                     </Space>
                   ))}
-                  <Button onClick={() => add()}>Add header</Button>
+                  <Button onClick={() => add()}>{t('Add header')}</Button>
                 </>
               )}
             </Form.List>
